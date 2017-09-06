@@ -9,7 +9,7 @@
     <!--<div>level: {{level}}</div>-->
     <div :style="style">
       <span>{{level}}：{{data.name}}</span>
-      <button @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
+      <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
     </div>

@@ -11,7 +11,7 @@
       <div>
         <div :style="topItemStyle">
           <span>{{level}}：{{v.name}}</span>
-          <button @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
+          <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
         </div>
         <template v-for="(val, key) in v.children" v-if="!v.hidden">
           <item :data="val" :level="Number(level + 1)" :options="options"></item>
