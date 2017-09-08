@@ -5,10 +5,10 @@
 */
 
 <template>
-  <div :style="backSpace">
+  <div :style="backSpace" class="line">
     <!--<div>level: {{level}}</div>-->
-    <div :style="style">
-      <span>{{level}}：{{data.name}}</span>
+    <div :style="style" class="line-textarea">
+      <span class="item">{{level}}：{{data.name}}<span class="animation"></span></span>
       <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
@@ -19,6 +19,32 @@
   </div>
 </template>
 <style scoped>
+  .item {
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .line-textarea {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .animation {
+    position: absolute;
+    left: 0;
+    bottom: 1px;
+    height: 1px;
+    z-index: 1;
+    width: 0;
+    background-color: #fff;
+    width: 0%;
+  }
+
+  .item:hover .animation {
+    width: 100%;
+    transition: width 1.5s ease;
+  }
 
 
 </style>

@@ -10,7 +10,7 @@
     <template v-for="(v, k) in testData" :style="rootStyle">
       <div>
         <div :style="topItemStyle">
-          <span>{{level}}：{{v.name}}</span>
+          <span class="item">{{level}}：{{v.name}}</span>
           <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
         </div>
         <template v-for="(val, key) in v.children" v-if="!v.hidden">
@@ -21,7 +21,9 @@
   </div>
 </template>
 <style scoped>
-
+  .item {
+    cursor: pointer;
+  }
 
 </style>
 <script>
