@@ -14,7 +14,7 @@
           <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
         </div>
         <template v-for="(val, key) in v.children" v-if="!v.hidden">
-          <item :data="val" :level="Number(level + 1)" :options="options"></item>
+          <item :data="val" :level="Number(level + 1)" :options="options" :settings="mixinSetting"></item>
         </template>
       </div>
     </template>
@@ -47,6 +47,12 @@
             backSpace: 20
           }
         }
+      },
+      settings: {
+        type: Object,
+        default () {
+          return {}
+        }
       }
     },
     created () {
@@ -67,6 +73,11 @@
           padding: '0 10px',
           borderBottom: '1px solid #bbb'
         },
+        defaultSettings: {
+          underLine: true,
+          backSpace: 20
+        },
+
         testData: [
           {
             'name': '前端工程师',
@@ -481,7 +492,6 @@
             ]
           }
         ],
-        marginLeft: 30,
         level: 0
       }
     },
@@ -506,6 +516,9 @@
       topItemStyle () {
         let style = Object.assign({}, this.topItemDefaultStyle, this.options.topItemStyle ? this.options.topItemStyle : {})
         return style
+      },
+      mixinSetting () {
+        return Object.assign({}, this.defaultSettings, this.settings)
       }
     },
     components: {

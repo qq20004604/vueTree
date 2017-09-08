@@ -8,13 +8,13 @@
   <div :style="backSpace" class="line">
     <!--<div>level: {{level}}</div>-->
     <div :style="style" class="line-textarea">
-      <span class="item">{{level}}：{{data.name}}<span class="animation"></span></span>
+      <span class="item">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></span>
       <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
     </div>
     <template v-for="(val, key) in data.children" v-if="!data.hidden">
-      <tree-item :data="val" :level="Number(level + 1)" :options="options"></tree-item>
+      <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"></tree-item>
     </template>
   </div>
 </template>
@@ -41,9 +41,10 @@
     width: 0%;
   }
 
+  /* duang的特效 */
   .item:hover .animation {
     width: 100%;
-    transition: width 1.5s ease;
+    transition: width 1s ease;
   }
 
 
@@ -58,10 +59,6 @@
       level: {
         type: Number
       },
-      marginLeft: {
-        type: Number,
-        default: 20
-      },
       options: {
         type: Object,
         default () {
@@ -70,6 +67,12 @@
             itemStyle: {},
             backSpace: 20
           }
+        }
+      },
+      settings: {
+        type: Object,
+        default () {
+          return {}
         }
       }
     },
@@ -94,6 +97,7 @@
           name: this.val
         })
       },
+      // 隐藏显示子节点
       hideOrShow (val) {
         console.log(val)
         if (val.hidden === undefined) {
@@ -104,14 +108,8 @@
     },
     computed: {
       backSpace () {
-        if (this.options.backSpace) {
-          return {
-            marginLeft: this.options.backSpace + 'px'
-          }
-        } else {
-          return {
-            marginLeft: '20px'
-          }
+        return {
+          marginLeft: (this.settings.backSpace ? this.settings.backSpace : '20') + 'px'
         }
       },
       style () {
