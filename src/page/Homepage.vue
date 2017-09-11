@@ -31,9 +31,7 @@
     width: 555px;
     height: 500px;
     margin: 0 auto;
-    padding: 10px;
     box-sizing: border-box;
     overflow: auto;
-    background-color: #232a30;
   }
 </style>

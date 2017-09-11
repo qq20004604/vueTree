@@ -5,17 +5,25 @@
 */
 
 <template>
-  <div :style="backSpace" class="line">
+  <div>
     <!--<div>level: {{level}}</div>-->
-    <div :style="style" class="line-textarea">
+    <div :style="style" class="line-textarea" :lv="level" @click="log">
       <span class="item">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></span>
       <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
     </div>
-    <template v-for="(val, key) in data.children" v-if="!data.hidden">
-      <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"></tree-item>
-    </template>
+    <transition
+      v-on:before-enter="beforeEnter"
+      v-on:enter="enter"
+      v-on:leave="leave">
+      <div style="transform-origin: 50% 0;" v-if="!data.hidden">
+        <template v-for="(val, k) in data.children">
+          <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"
+                     key="{{k}}"></tree-item>
+        </template>
+      </div>
+    </transition>
   </div>
 </template>
 <style scoped>
@@ -46,10 +54,10 @@
     width: 100%;
     transition: width 1s ease;
   }
-
-
 </style>
 <script>
+  import Velocity from 'velocity-animate'
+
   export default {
     name: 'tree-item',
     props: {
@@ -97,23 +105,65 @@
           name: this.val
         })
       },
+      log () {
+        console.log(this.data.name)
+      },
+
       // 隐藏显示子节点
       hideOrShow (val) {
-        console.log(val)
         if (val.hidden === undefined) {
           this.$set(val, 'hidden', false)
         }
         val.hidden = !val.hidden
+      },
+      // 过渡动画，过渡过程中点击无效
+      beforeEnter (el) {
+        if (this.settings.transitions.enabled) {
+          el.style.pointerEvents = 'none'
+        }
+      },
+      // 进入时主要执行函数
+      enter: function (el, done) {
+        // 这个只执行一次
+        if (this.settings.transitions.enabled) {
+          // 需要获取真实时间
+          let height = el.offsetHeight
+          Velocity(el, {scaleY: 0, height: 0}, {duration: 1})
+          Velocity(el, {scaleY: 1, height}, {
+            duration: this.settings.transitions.enterDuration,
+            complete () {
+              el.style.pointerEvents = 'auto'
+              // 必须额外加下面这句，否则相当于height被设置了，而不是自适应
+              el.style.height = ''
+              done()
+            }
+          })
+        } else {
+          done()
+        }
+      },
+      // 退出时主要执行函数
+      leave: function (el, done) {
+        if (this.settings.transitions.enabled) {
+          el.style.pointerEvents = 'none'
+          Velocity(el, {scaleY: 0, height: 0}, {
+            duration: this.settings.transitions.leaveDuration,
+            complete () {
+              el.style.pointerEvents = 'auto'
+              el.style.height = ''
+              done()
+            }
+          })
+        } else {
+          done()
+        }
       }
     },
     computed: {
-      backSpace () {
-        return {
-          marginLeft: (this.settings.backSpace ? this.settings.backSpace : '20') + 'px'
-        }
-      },
       style () {
-        let style = Object.assign({}, this.options.itemStyle, this.itemDefaultStyle)
+        let style = Object.assign({
+          paddingLeft: (this.settings.backSpace ? this.settings.backSpace : '20') * this.level + 'px'
+        }, this.options.itemStyle, this.itemDefaultStyle)
         return style
       }
     }

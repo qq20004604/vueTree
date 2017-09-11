@@ -7,15 +7,22 @@
 
 <template>
   <div :style="listStyle">
-    <template v-for="(v, k) in testData" :style="rootStyle">
-      <div>
-        <div :style="topItemStyle">
+    <template v-for="(v, k) in testData">
+      <div :style="rootStyle">
+        <div :style="topItemStyle" lv="topItemStyle">
           <span class="item">{{level}}：{{v.name}}</span>
           <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
         </div>
-        <template v-for="(val, key) in v.children" v-if="!v.hidden">
-          <item :data="val" :level="Number(level + 1)" :options="options" :settings="mixinSetting"></item>
-        </template>
+        <transition
+          v-on:before-enter="beforeEnter"
+          v-on:enter="enter"
+          v-on:leave="leave">
+          <div v-if="!v.hidden" style="transform-origin: 50% 0;">
+            <template v-for="(val, key) in v.children">
+              <item :data="val" :level="Number(level + 1)" :options="options" :settings="mixinSetting"></item>
+            </template>
+          </div>
+        </transition>
       </div>
     </template>
   </div>
@@ -28,6 +35,7 @@
 </style>
 <script>
   import item from './treeItem.vue'
+  import Velocity from 'velocity-animate'
 
   export default {
     props: {
@@ -61,11 +69,12 @@
       return {
         listOptions: {
           backgroundColor: '#232a30',
-          color: ' #ddd'
+          color: ' #ddd',
+          width: '100%'
         },
         rootOptions: {
           borderBottom: '1px solid #ddd',
-          padding: '10px'
+          width: '100%'
         },
         topItemDefaultStyle: {
           height: '30px',
@@ -74,8 +83,19 @@
           borderBottom: '1px solid #bbb'
         },
         defaultSettings: {
+          // 下划线动画
           underLine: true,
-          backSpace: 20
+          // 每行相对父节点缩进
+          backSpace: 20,
+          // 过渡动画
+          transitions: {
+            // 启用开关
+            enabled: true,
+            // 进入动画时间
+            enterDuration: 500,
+            // 退出动画时间
+            leaveDuration: 500
+          }
         },
 
         testData: [
@@ -501,6 +521,49 @@
           this.$set(val, 'hidden', false)
         }
         val.hidden = !val.hidden
+      },
+
+      // 过渡动画，过渡过程中点击无效
+      beforeEnter (el) {
+        if (this.mixinSetting.transitions.enabled) {
+          el.style.pointerEvents = 'none'
+        }
+      },
+      // 进入时主要执行函数
+      enter: function (el, done) {
+        // 这个只执行一次
+        if (this.mixinSetting.transitions.enabled) {
+          // 需要获取真实时间
+          let height = el.offsetHeight
+          Velocity(el, {scaleY: 0, height: 0}, {duration: 1})
+          Velocity(el, {scaleY: 1, height}, {
+            duration: this.mixinSetting.transitions.enterDuration,
+            complete () {
+              el.style.pointerEvents = 'auto'
+              // 必须额外加下面这句，否则相当于height被设置了，而不是自适应
+              el.style.height = ''
+              done()
+            }
+          })
+        } else {
+          done()
+        }
+      },
+      // 退出时主要执行函数
+      leave: function (el, done) {
+        if (this.mixinSetting.transitions.enabled) {
+          el.style.pointerEvents = 'none'
+          Velocity(el, {scaleY: 0, height: 0}, {
+            duration: this.mixinSetting.transitions.leaveDuration,
+            complete () {
+              el.style.pointerEvents = 'auto'
+              el.style.height = ''
+              done()
+            }
+          })
+        } else {
+          done()
+        }
       }
     },
     computed: {
