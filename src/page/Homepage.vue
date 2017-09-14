@@ -28,7 +28,7 @@
 </script>
 <style>
   .app {
-    width: 555px;
+    width: 500px;
     height: 500px;
     margin: 0 auto;
     box-sizing: border-box;

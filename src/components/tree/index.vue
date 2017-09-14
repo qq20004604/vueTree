@@ -6,10 +6,10 @@
 */
 
 <template>
-  <div :style="listStyle">
+  <div :style="listStyle" class="list">
     <template v-for="(v, k) in testData">
-      <div :style="rootStyle">
-        <div :style="topItemStyle" lv="topItemStyle">
+      <div :style="rootStyle" class="root">
+        <div :style="topItemStyle" lv="topItemStyle" class="topItem">
           <span class="item">{{level}}：{{v.name}}</span>
           <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
         </div>
@@ -32,6 +32,39 @@
     cursor: pointer;
   }
 
+  /* 整个列表的样式 */
+  .list {
+    position: relative;
+    overflow: auto; /*可以确保所有都基于根的列表元素（不会超出这个范围）*/
+    background-color: #232a30; /*列表的背景颜色*/
+    color: #ddd; /*整体文字颜色*/
+    width: 100%; /*宽度（默认撑满）*/
+    height: 100%; /*宽度（默认撑满）*/
+  }
+
+  /* 列表的根结点的样式（可能有多个根结点）（含他的子节点部分） */
+  .root {
+    min-width: 100%;
+  }
+
+  /* 第一层根结点（只有根节点）（不含其它子节点） */
+  /* 注：
+   * 1、由于设计时的结构所限，不能自定义子节点的背景颜色（以及上划线、下划线等），原因是子节点的宽度受限于父框体的宽度影响。
+   *    导致当深层子节点把整个list的根结点的宽度撑开后（触发overflow），topItem的根结点的宽度，只能保持和撑开前的宽度一致；
+   *    （测试办法是写一个树，然后将list的宽度设置比较小，可以观察topItem这个DOM和list这个DOM的宽度差异。）
+   * 2、如果需要区别，请使用其他结构的树
+   * 3、除非你能保证整个树不会触发overflow的效果，那么也只能设置层级0的子节点和更深子节点的差异；
+   *    设置办法是设置list背景颜色为更深子节点预期的背景颜色，设置topItem的样式颜色为他本身的颜色
+   **/
+  .topItem {
+    height: 40px;
+    line-height: 40px;
+    width: 100%;
+    padding: 0 10px;
+    font-size: 20px;
+    background-color: #151515;
+  }
+
 </style>
 <script>
   import item from './treeItem.vue'
@@ -45,9 +78,9 @@
           return {
             // 整个列表的样式
             listStyle: {},
-            // 列表的根结点的样式（可能有多个根结点）（含他的子节点部分）
+            // 根结点的样式（包括他的子节点）
             rootStyle: {},
-            // 第一层根结点（只有根节点）（不含其它子节点）
+            // 根结点，这里指的是层级为0的结点，不包括更深层级的结点
             topItemStyle: {},
             // 下层子节点的样式
             itemStyle: {},
@@ -67,21 +100,6 @@
     },
     data () {
       return {
-        listOptions: {
-          backgroundColor: '#232a30',
-          color: ' #ddd',
-          width: '100%'
-        },
-        rootOptions: {
-          borderBottom: '1px solid #ddd',
-          width: '100%'
-        },
-        topItemDefaultStyle: {
-          height: '30px',
-          lineHeight: '30px',
-          padding: '0 10px',
-          borderBottom: '1px solid #bbb'
-        },
         defaultSettings: {
           // 下划线动画
           underLine: true,
@@ -568,17 +586,13 @@
     },
     computed: {
       listStyle () {
-        let style = Object.assign({}, this.listOptions, this.options.listStyle ? this.options.listStyle : {})
-        console.log(style)
-        return style
+        return this.options.listStyle ? this.options.listStyle : {}
       },
       rootStyle () {
-        let style = Object.assign({}, this.rootOptions, this.options.rootStyle ? this.options.rootStyle : {})
-        return style
+        return this.options.rootStyle ? this.options.rootStyle : {}
       },
       topItemStyle () {
-        let style = Object.assign({}, this.topItemDefaultStyle, this.options.topItemStyle ? this.options.topItemStyle : {})
-        return style
+        return this.options.topItemStyle ? this.options.topItemStyle : {}
       },
       mixinSetting () {
         return Object.assign({}, this.defaultSettings, this.settings)

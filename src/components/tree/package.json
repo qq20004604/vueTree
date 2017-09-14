@@ -1,0 +1,25 @@
+{
+  "name": "good-vue-tree",
+  "version": "1.0.0",
+  "description": "A tree for Vue.js2.0+ with many options.",
+  "main": "index.vue",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qq20004604/vueTree.git"
+  },
+  "keywords": [
+    "vue-tree"
+  ],
+  "author": "Dong Wang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/qq20004604/vueTree/issues"
+  },
+  "homepage": "https://github.com/qq20004604/vueTree#readme",
+  "dependencies": {
+    "velocity-animate": "^1.5.0"
+  }
+}

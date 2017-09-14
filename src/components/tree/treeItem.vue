@@ -8,7 +8,7 @@
   <div>
     <!--<div>level: {{level}}</div>-->
     <div :style="style" class="line-textarea" :lv="level" @click="log">
-      <span class="item">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></span>
+      <div class="item">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></div>
       <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
@@ -27,15 +27,16 @@
   </div>
 </template>
 <style scoped>
-  .item {
-    cursor: pointer;
-    overflow: hidden;
+  .line-textarea {
     position: relative;
+    display: inline-block;
   }
 
-  .line-textarea {
-    overflow: hidden;
+  .item {
+    cursor: pointer;
     position: relative;
+    display: inline-block;
+    white-space: nowrap;
   }
 
   .animation {
@@ -86,6 +87,7 @@
     },
     data () {
       return {
+        // 由于设计原理所限制，建议不要设置子节点的背景颜色
         itemDefaultStyle: {
           height: '20px',
           lineHeight: '20px'
