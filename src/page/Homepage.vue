@@ -1,6 +1,6 @@
 <template>
   <div class="app">
-    <tree :options="options"></tree>
+    <tree :options="options" :settings="settings"></tree>
   </div>
 </template>
 <script>
@@ -10,11 +10,16 @@
     data () {
       return {
         options: {
-          listStyle: {},
+          listStyle: {
+            overflow: 'visible'
+          },
           rootStyle: {},
           topItemStyle: {},
-          itemStyle: {},
-          backSpace: 30
+          itemStyle: {}
+        },
+        settings: {
+//          backSpace: 20,
+//          isOverflowHidden: false
         }
       }
     },
@@ -28,10 +33,11 @@
 </script>
 <style>
   .app {
-    width: 500px;
+    width: 200px;
     height: 500px;
     margin: 0 auto;
     box-sizing: border-box;
     overflow: auto;
+    background-color: red;
   }
 </style>

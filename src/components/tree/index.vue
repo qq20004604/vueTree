@@ -11,7 +11,7 @@
       <div :style="rootStyle" class="root">
         <div :style="topItemStyle" lv="topItemStyle" class="topItem">
           <span class="item">{{level}}：{{v.name}}</span>
-          <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden?'隐':'显'}}</button>
+          <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden ? '隐' : '显'}}</button>
         </div>
         <transition
           v-on:before-enter="beforeEnter"
@@ -48,21 +48,14 @@
   }
 
   /* 第一层根结点（只有根节点）（不含其它子节点） */
-  /* 注：
-   * 1、由于设计时的结构所限，不能自定义子节点的背景颜色（以及上划线、下划线等），原因是子节点的宽度受限于父框体的宽度影响。
-   *    导致当深层子节点把整个list的根结点的宽度撑开后（触发overflow），topItem的根结点的宽度，只能保持和撑开前的宽度一致；
-   *    （测试办法是写一个树，然后将list的宽度设置比较小，可以观察topItem这个DOM和list这个DOM的宽度差异。）
-   * 2、如果需要区别，请使用其他结构的树
-   * 3、除非你能保证整个树不会触发overflow的效果，那么也只能设置层级0的子节点和更深子节点的差异；
-   *    设置办法是设置list背景颜色为更深子节点预期的背景颜色，设置topItem的样式颜色为他本身的颜色
-   **/
+
   .topItem {
     height: 40px;
     line-height: 40px;
     width: 100%;
     padding: 0 10px;
     font-size: 20px;
-    background-color: #151515;
+    background-color: red;
   }
 
 </style>
@@ -113,9 +106,10 @@
             enterDuration: 500,
             // 退出动画时间
             leaveDuration: 500
-          }
+          },
+          // list的overflow是否是隐藏，这个影响背景颜色等能否单独设置给子节点
+          isOverflowHidden: true
         },
-
         testData: [
           {
             'name': '前端工程师',
@@ -585,11 +579,39 @@
       }
     },
     computed: {
+      defaultListStyle () {
+        let style = {}
+        // 如果overflow隐藏，那么添加overflow
+        if (this.mixinSetting.isOverflowHidden) {
+          style['overflow-x'] = 'hidden'
+        }
+        return style
+      },
+
       listStyle () {
-        return this.options.listStyle ? this.options.listStyle : {}
+        // 如果配置有listStyle，则返回混合后的
+        // 来源于setting的css的优先级高于普通配置（下同）
+        if (this.options.listStyle) {
+          return Object.assign(this.options.listStyle, this.defaultListStyle)
+        } else {
+          return this.defaultListStyle
+        }
+      },
+
+      defaultRootStyle () {
+        let style = {}
+        // 如果overflow隐藏，那么添加overflow
+        if (this.mixinSetting.isOverflowHidden) {
+
+        }
+        return style
       },
       rootStyle () {
-        return this.options.rootStyle ? this.options.rootStyle : {}
+        if (this.options.listStyle) {
+          return Object.assign(this.options.rootStyle, this.defaultRootStyle)
+        } else {
+          return this.rootStyle
+        }
       },
       topItemStyle () {
         return this.options.topItemStyle ? this.options.topItemStyle : {}

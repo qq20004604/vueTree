@@ -8,8 +8,16 @@
   <div>
     <!--<div>level: {{level}}</div>-->
     <div :style="style" class="line-textarea" :lv="level" @click="log">
-      <div class="item">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></div>
-      <button v-if="data.children" @click="hideOrShow(data)">{{data.hidden?'隐':'显'}}</button>
+      <div :style="itemStyle" class="item">
+        <button v-if="data.children" @click="hideOrShow(data)">
+          {{data.hidden ? '隐' : '显'}}
+        </button>
+        <button v-if="!data.children">无</button>
+        <div class="item-text">
+          <span class="text">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></span>
+
+        </div>
+      </div>
       <!--<input type="text" v-model="val">-->
       <!--<button @click="addItem">+</button>-->
     </div>
@@ -29,14 +37,37 @@
 <style scoped>
   .line-textarea {
     position: relative;
-    display: inline-block;
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
   }
 
   .item {
     cursor: pointer;
     position: relative;
+    height: 20px;
+    line-height: 20px;
+    /*display: inline-block;*/
+    /*white-space: nowrap;*/
+  }
+
+  .item > button {
+    text-align: center;
+    height: 20px;
+  }
+
+  .item-text {
+    position: relative;
     display: inline-block;
-    white-space: nowrap;
+    overflow: hidden;
+    height: 20px;
+    line-height: 20px;
+  }
+
+  .text {
+    height: 20px;
+    line-height: 20px;
+    display: inline-block;
   }
 
   .animation {
@@ -54,6 +85,11 @@
   .item:hover .animation {
     width: 100%;
     transition: width 1s ease;
+  }
+
+  .item:hover .text {
+    transition: transform 3s 1s ease;
+    transform: translateX(-100%);
   }
 </style>
 <script>
@@ -87,7 +123,6 @@
     },
     data () {
       return {
-        // 由于设计原理所限制，建议不要设置子节点的背景颜色
         itemDefaultStyle: {
           height: '20px',
           lineHeight: '20px'
@@ -162,10 +197,22 @@
       }
     },
     computed: {
-      style () {
-        let style = Object.assign({
+      itemStyle () {
+        let style = {
           paddingLeft: (this.settings.backSpace ? this.settings.backSpace : '20') * this.level + 'px'
-        }, this.options.itemStyle, this.itemDefaultStyle)
+        }
+
+        if (this.settings.isOverflowHidden) {
+          style.maxWidth = '100%'
+          style['overflow-x'] = 'hidden'
+          style['text-overflow'] = 'ellipsis'
+          style['white-space'] = 'no-wrap'
+        }
+
+        return style
+      },
+      style () {
+        let style = Object.assign({}, this.options.itemStyle, this.itemDefaultStyle)
         return style
       }
     }
