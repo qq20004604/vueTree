@@ -8,14 +8,15 @@
   <div>
     <!--<div>level: {{level}}</div>-->
     <div :style="style" class="line-textarea" :lv="level" @click="log">
-      <div :style="itemStyle" class="item">
-        <button v-if="data.children" @click="hideOrShow(data)">
-          {{data.hidden ? '隐' : '显'}}
-        </button>
-        <button v-if="!data.children">无</button>
+      <div :style="itemStyle" class="item" @mouseover="isHover" ref="test">
         <div class="item-text">
-          <span class="text">{{level}}：{{data.name}}<span :class="{animation:settings.underLine}"></span></span>
-
+          <button v-if="data.children" @click="hideOrShow(data)">
+            {{data.hidden ? '隐' : '显'}}
+          </button>
+          <button v-if="!data.children">无</button>
+          <span class="text" ref="child">{{level}}：{{data.name}}
+            <span :class="{animation:settings.underLine}"></span>
+          </span>
         </div>
       </div>
       <!--<input type="text" v-model="val">-->
@@ -51,23 +52,26 @@
     /*white-space: nowrap;*/
   }
 
-  .item > button {
-    text-align: center;
-    height: 20px;
-  }
-
   .item-text {
     position: relative;
     display: inline-block;
     overflow: hidden;
     height: 20px;
     line-height: 20px;
+    float: left;
+  }
+
+  .item-text > button {
+    text-align: center;
+    height: 20px;
+    float: left;
   }
 
   .text {
     height: 20px;
     line-height: 20px;
     display: inline-block;
+    margin-left: -2px;
   }
 
   .animation {
@@ -160,7 +164,7 @@
         }
       },
       // 进入时主要执行函数
-      enter: function (el, done) {
+      enter (el, done) {
         // 这个只执行一次
         if (this.settings.transitions.enabled) {
           // 需要获取真实时间
@@ -180,7 +184,7 @@
         }
       },
       // 退出时主要执行函数
-      leave: function (el, done) {
+      leave (el, done) {
         if (this.settings.transitions.enabled) {
           el.style.pointerEvents = 'none'
           Velocity(el, {scaleY: 0, height: 0}, {
@@ -194,6 +198,19 @@
         } else {
           done()
         }
+      },
+      isHover () {
+        // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
+        let DOM = this.$refs.test
+//        console.log(DOM)
+//        console.log(DOM.clientWidth)
+        let DOM2 = this.$refs.child
+//        console.log(DOM2.clientWidth)
+        let result = DOM2.clientWidth +
+          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level +
+          28 - DOM.clientWidth
+        console.log(result)
+//        debugger
       }
     },
     computed: {
