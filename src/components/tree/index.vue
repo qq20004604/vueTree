@@ -11,14 +11,14 @@
       <div :style="rootStyle" class="root">
         <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
           <div class="content" :style="contentStyle" ref="child">
-            <div class="btn-box" :style="btnBoxStyle">
+            <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
               <button v-if="v.children" @click="hideOrShow(v)">
                 {{v.hidden ? '隐' : '显'}}
               </button>
+              <button v-if="!v.children">无</button>
             </div>
-            <button v-if="!v.children">无</button>
             <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover(k)" @mouseout="mouseOut(k)">
-              <span class="text" :class="{'isMouseover':isMouseover}"
+              <span class="text" :class="textClass"
                     :style="textStyle">{{level}}：{{v.name}}
                 <span :class="{underline:mixinSetting.underLine}"></span>
               </span>
@@ -128,6 +128,11 @@
   .text {
     display: inline-block;
   }
+
+  .text-is-ellipsis {
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
 </style>
 <script>
   import item from './treeItem.vue'
@@ -157,6 +162,16 @@
         }
       }
     },
+    mounted () {
+//      if (this.mixinSetting.isOverflowHidden.isEllipsis) {
+//        let parentDom = this.$refs.parent
+//        let btnBoxDom = this.$refs.btnBox
+//        console.log(parentDom, btnBoxDom)
+//        let width = $refs.parent.clientWidth -
+//          $refs.btnBox.clientWidth + 'px'
+//        this.$set(this.textSpan, 'width', width)
+//      }
+    },
     data () {
       return {
         defaultSettings: {
@@ -177,6 +192,8 @@
           // 默认打开
           isOverflowHidden: {
             enabled: true,
+            // 这个表示是否超出部分显示三个点（本项生效将导致下面的跑马灯方式不生效）
+            isEllipsis: true,
             offset: 5,  // 单位px
             animateTime: 1.5  // 单位秒
           }
@@ -596,8 +613,8 @@
           }
         ],
         level: 0,
-        isMouseover: false,
-        textMoveLeft: {}
+        isMouseover: false, // 当前鼠标是否移动上去了
+        textSpan: {}
       }
     },
     methods: {
@@ -652,7 +669,7 @@
       // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
       mouseHover (index) {
         // 如果没有隐藏超出的，直接返回
-        if (!this.mixinSetting.isOverflowHidden.enabled) {
+        if (!this.mixinSetting.isOverflowHidden.enabled || this.mixinSetting.isOverflowHidden.isEllipsis) {
           return
         }
         // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
@@ -665,17 +682,17 @@
         let result = DOM2.clientWidth + Number(this.mixinSetting.backSpace ? this.mixinSetting.backSpace : '20') * this.level - DOM.clientWidth + offset
         if (result > 0) {
           this.isMouseover = true
-          this.textMoveLeft.transform = `translateX(-${result}px)`
-          this.textMoveLeft.transition = `transform ${anitmateTime}s 1s ease`
+          this.textSpan.transform = `translateX(-${result}px)`
+          this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
         }
       },
       mouseOut () {
-        if (!this.mixinSetting.isOverflowHidden.enabled) {
+        if (!this.mixinSetting.isOverflowHidden.enabled || this.mixinSetting.isOverflowHidden.isEllipsis) {
           return
         }
         this.isMouseover = false
-        this.textMoveLeft.transform = `translateX(0)`
-        this.textMoveLeft.transition = ``
+        this.textSpan.transform = `translateX(0)`
+        this.textSpan.transition = ``
       }
     },
     computed: {
@@ -747,7 +764,13 @@
         let style = {}
         style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
         style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-        return Object.assign({}, this.textMoveLeft, style)
+        return Object.assign({}, this.textSpan, style)
+      },
+      textClass () {
+        return {
+          'isMouseover': this.isMouseover,
+          'text-is-ellipsis': this.mixinSetting.isOverflowHidden.enabled && this.mixinSetting.isOverflowHidden.isEllipsis
+        }
       }
     },
     components: {

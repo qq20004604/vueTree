@@ -99,5 +99,5 @@ run
 
 伯乐在线的论坛版块，发帖回帖解决这个办法的方案是【4】，附链接：[点击查看](http://group.jobbole.com/)
 
-Vue-tree组件通过``settings.isOverflowHidden``来配置，值为true时采用【方案2】，为false时采用【方案3】。
+Vue-tree组件通过``settings.isOverflowHidden.enabled``来配置，值为true时采用【方案2】（但文字超出部分没有用三个点，而是走马灯的形式），为false时采用【方案3】。
 

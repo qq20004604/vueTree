@@ -9,13 +9,15 @@
     <div class="line" :style="style" :lv="level" ref="parent">
       <div class="afterBackSpace" :style="itemStyle">
         <div class="content" ref="child">
-          <button v-if="data.children" @click="hideOrShow(data)">
-            {{data.hidden ? '隐' : '显'}}
-          </button>
-          <button v-if="!data.children">无</button>
+          <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
+            <button v-if="data.children" @click="hideOrShow(data)">
+              {{data.hidden ? '隐' : '显'}}
+            </button>
+            <button v-if="!data.children">无</button>
+          </div>
           <span class="text-box" @mouseover="mouseHover" @mouseout="mouseOut">
             <span class="text" :class="{'isMouseover':isMouseover}"
-                  :style="textMoveLeft">{{level}}：{{data.name}}
+                  :style="textSpan">{{level}}：{{data.name}}
             <span :class="{underline:settings.underLine}"></span></span>
           </span>
         </div>
@@ -55,16 +57,29 @@
     float: left;
   }
 
-  .content > button {
-    height: 20px;
-    margin-left: -2px;
+  .btn-box {
+    display: inline-block;
+    float: left;
+    position: relative;
+  }
+
+  .btn-box > button {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
   }
 
   .text-box {
     height: 20px;
     line-height: 20px;
     display: inline-block;
-    margin-left: -3px;
+    /*margin-left: -3px;*/
     overflow: hidden;
     position: relative;
   }
@@ -119,6 +134,18 @@
         }
       }
     },
+    mounted () {
+      if (this.settings.isOverflowHidden.isEllipsis) {
+        let parentDom = this.$refs.parent
+        let btnBoxDom = this.$refs.btnBox
+        let width = parentDom.clientWidth -
+          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
+          btnBoxDom.clientWidth + 'px'
+        this.$set(this.textSpan, 'width', width)
+        this.$set(this.textSpan, 'text-overflow', 'ellipsis')
+        this.$set(this.textSpan, 'overflow', 'hidden')
+      }
+    },
     data () {
       return {
         itemDefaultStyle: {
@@ -127,7 +154,7 @@
         },
         val: '',
         isMouseover: false,
-        textMoveLeft: {}
+        textSpan: {}
       }
     },
     methods: {
@@ -194,7 +221,7 @@
       // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
       mouseHover () {
         // 如果没有隐藏超出的，直接返回
-        if (!this.settings.isOverflowHidden.enabled) {
+        if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
           return
         }
         // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
@@ -207,17 +234,18 @@
         let result = DOM2.clientWidth + Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level - DOM.clientWidth + offset
         if (result > 0) {
           this.isMouseover = true
-          this.textMoveLeft.transform = `translateX(-${result}px)`
-          this.textMoveLeft.transition = `transform ${anitmateTime}s 1s ease`
+          this.textSpan.transform = `translateX(-${result}px)`
+          this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
         }
+        console.log(this.textSpan)
       },
       mouseOut () {
         if (!this.settings.isOverflowHidden.enabled) {
           return
         }
         this.isMouseover = false
-        this.textMoveLeft.transform = `translateX(0)`
-        this.textMoveLeft.transition = ``
+        this.textSpan.transform = `translateX(0)`
+        this.textSpan.transition = ``
       }
     },
     computed: {
@@ -239,6 +267,12 @@
       },
       style () {
         let style = Object.assign({}, this.options.itemStyle, this.itemDefaultStyle)
+        return style
+      },
+      btnBoxStyle () {
+        let style = {}
+        style['height'] = this.options.itemStyle.height ? this.options.itemStyle.height : '20px'
+        style['line-height'] = this.options.itemStyle.lineHeight ? this.options.itemStyle.lineHeight : '20px'
         return style
       }
     }
