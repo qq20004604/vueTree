@@ -9,10 +9,23 @@
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in testData">
       <div :style="rootStyle" class="root">
-        <div :style="topItemStyle" lv="topItemStyle" class="topItem">
-          <span class="item">{{level}}：{{v.name}}</span>
-          <button v-if="v.children" @click="hideOrShow(v)">{{v.hidden ? '隐' : '显'}}</button>
+        <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
+          <div class="content" :style="contentStyle" ref="child">
+            <div class="btn-box" :style="btnBoxStyle">
+              <button v-if="v.children" @click="hideOrShow(v)">
+                {{v.hidden ? '隐' : '显'}}
+              </button>
+            </div>
+            <button v-if="!v.children">无</button>
+            <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover(k)" @mouseout="mouseOut(k)">
+              <span class="text" :class="{'isMouseover':isMouseover}"
+                    :style="textStyle">{{level}}：{{v.name}}
+                <span :class="{underline:mixinSetting.underLine}"></span>
+              </span>
+          </span>
+          </div>
         </div>
+
         <transition
           v-on:before-enter="beforeEnter"
           v-on:enter="enter"
@@ -50,14 +63,71 @@
   /* 第一层根结点（只有根节点）（不含其它子节点） */
 
   .topItem {
-    height: 40px;
-    line-height: 40px;
     width: 100%;
-    padding: 0 10px;
     font-size: 20px;
     background-color: red;
+    cursor: pointer;
+    position: relative;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
+  .content {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+    height: 20px;
+    line-height: 20px;
+    float: left;
+  }
+
+  .btn-box {
+    display: inline-block;
+    float: left;
+    position: relative;
+  }
+
+  .btn-box > button {
+    display: inline-block;
+    vertical-align: top;
+    position: relative;
+    top: 50%;
+    -webkit-transform: translateY(-50%);
+    -moz-transform: translateY(-50%);
+    -ms-transform: translateY(-50%);
+    -o-transform: translateY(-50%);
+    transform: translateY(-50%);
+  }
+
+  .text-box {
+    height: 20px;
+    line-height: 20px;
+    display: inline-block;
+    /*margin-left: -3px; !*处理空格带来的空白*!*/
+    overflow: hidden;
+    position: relative;
+  }
+
+  .underline {
+    position: absolute;
+    left: 0;
+    bottom: 1px;
+    height: 1px;
+    z-index: 1;
+    width: 0;
+    background-color: #fff;
+    width: 0%;
+  }
+
+  /* duang的特效 */
+  .text-box:hover .underline {
+    width: 100%;
+    transition: width 1s ease;
+  }
+
+  .text {
+    display: inline-block;
+  }
 </style>
 <script>
   import item from './treeItem.vue'
@@ -76,9 +146,7 @@
             // 根结点，这里指的是层级为0的结点，不包括更深层级的结点
             topItemStyle: {},
             // 下层子节点的样式
-            itemStyle: {},
-            // 每层子结点的缩进
-            backSpace: 20
+            itemStyle: {}
           }
         }
       },
@@ -88,8 +156,6 @@
           return {}
         }
       }
-    },
-    created () {
     },
     data () {
       return {
@@ -107,12 +173,17 @@
             // 退出动画时间
             leaveDuration: 500
           },
-          // list的overflow是否是隐藏，这个影响背景颜色等能否单独设置给子节点
-          isOverflowHidden: true
+          // list的overflow是否是隐藏，这个影响背景颜色等能否单独设置给子节点。
+          // 默认打开
+          isOverflowHidden: {
+            enabled: true,
+            offset: 5,  // 单位px
+            animateTime: 1.5  // 单位秒
+          }
         },
         testData: [
           {
-            'name': '前端工程师',
+            'name': '前端工程师1231231',
             'children': [
               {
                 'name': '页面',
@@ -524,7 +595,9 @@
             ]
           }
         ],
-        level: 0
+        level: 0,
+        isMouseover: false,
+        textMoveLeft: {}
       }
     },
     methods: {
@@ -534,7 +607,6 @@
         }
         val.hidden = !val.hidden
       },
-
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
         if (this.mixinSetting.transitions.enabled) {
@@ -542,7 +614,7 @@
         }
       },
       // 进入时主要执行函数
-      enter: function (el, done) {
+      enter (el, done) {
         // 这个只执行一次
         if (this.mixinSetting.transitions.enabled) {
           // 需要获取真实时间
@@ -562,7 +634,7 @@
         }
       },
       // 退出时主要执行函数
-      leave: function (el, done) {
+      leave (el, done) {
         if (this.mixinSetting.transitions.enabled) {
           el.style.pointerEvents = 'none'
           Velocity(el, {scaleY: 0, height: 0}, {
@@ -576,18 +648,45 @@
         } else {
           done()
         }
+      },
+      // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
+      mouseHover (index) {
+        // 如果没有隐藏超出的，直接返回
+        if (!this.mixinSetting.isOverflowHidden.enabled) {
+          return
+        }
+        // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
+        let DOM = this.$refs.parent[index]
+        let DOM2 = this.$refs.child[index]
+        // offset是额外偏差值，即给动画后的文字的右边留空
+        let offset = this.mixinSetting.isOverflowHidden.offset
+        // 动画时间
+        let anitmateTime = this.mixinSetting.isOverflowHidden.animateTime
+        let result = DOM2.clientWidth + Number(this.mixinSetting.backSpace ? this.mixinSetting.backSpace : '20') * this.level - DOM.clientWidth + offset
+        if (result > 0) {
+          this.isMouseover = true
+          this.textMoveLeft.transform = `translateX(-${result}px)`
+          this.textMoveLeft.transition = `transform ${anitmateTime}s 1s ease`
+        }
+      },
+      mouseOut () {
+        if (!this.mixinSetting.isOverflowHidden.enabled) {
+          return
+        }
+        this.isMouseover = false
+        this.textMoveLeft.transform = `translateX(0)`
+        this.textMoveLeft.transition = ``
       }
     },
     computed: {
       defaultListStyle () {
         let style = {}
         // 如果overflow隐藏，那么添加overflow
-        if (this.mixinSetting.isOverflowHidden) {
+        if (this.mixinSetting.isOverflowHidden.enabled) {
           style['overflow-x'] = 'hidden'
         }
         return style
       },
-
       listStyle () {
         // 如果配置有listStyle，则返回混合后的
         // 来源于setting的css的优先级高于普通配置（下同）
@@ -597,11 +696,10 @@
           return this.defaultListStyle
         }
       },
-
       defaultRootStyle () {
         let style = {}
         // 如果overflow隐藏，那么添加overflow
-        if (this.mixinSetting.isOverflowHidden) {
+        if (this.mixinSetting.isOverflowHidden.enabled) {
 
         }
         return style
@@ -614,10 +712,42 @@
         }
       },
       topItemStyle () {
-        return this.options.topItemStyle ? this.options.topItemStyle : {}
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+
+        if (this.options.topItemStyle) {
+          return Object.assign({}, this.options.topItemStyle, style)
+        } else {
+          return style
+        }
       },
       mixinSetting () {
         return Object.assign({}, this.defaultSettings, this.settings)
+      },
+      contentStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return style
+      },
+      btnBoxStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return style
+      },
+      textBoxStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return style
+      },
+      textStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return Object.assign({}, this.textMoveLeft, style)
       }
     },
     components: {

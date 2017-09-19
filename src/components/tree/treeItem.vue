@@ -6,21 +6,20 @@
 
 <template>
   <div>
-    <!--<div>level: {{level}}</div>-->
-    <div :style="style" class="line-textarea" :lv="level" @click="log">
-      <div :style="itemStyle" class="item" @mouseover="isHover" ref="test">
-        <div class="item-text">
+    <div class="line" :style="style" :lv="level" ref="parent">
+      <div class="afterBackSpace" :style="itemStyle">
+        <div class="content" ref="child">
           <button v-if="data.children" @click="hideOrShow(data)">
             {{data.hidden ? '隐' : '显'}}
           </button>
           <button v-if="!data.children">无</button>
-          <span class="text" ref="child">{{level}}：{{data.name}}
-            <span :class="{animation:settings.underLine}"></span>
+          <span class="text-box" @mouseover="mouseHover" @mouseout="mouseOut">
+            <span class="text" :class="{'isMouseover':isMouseover}"
+                  :style="textMoveLeft">{{level}}：{{data.name}}
+            <span :class="{underline:settings.underLine}"></span></span>
           </span>
         </div>
       </div>
-      <!--<input type="text" v-model="val">-->
-      <!--<button @click="addItem">+</button>-->
     </div>
     <transition
       v-on:before-enter="beforeEnter"
@@ -36,23 +35,18 @@
   </div>
 </template>
 <style scoped>
-  .line-textarea {
-    position: relative;
+  .line {
     display: block;
     overflow: hidden;
     white-space: nowrap;
   }
 
-  .item {
+  .afterBackSpace {
     cursor: pointer;
     position: relative;
-    height: 20px;
-    line-height: 20px;
-    /*display: inline-block;*/
-    /*white-space: nowrap;*/
   }
 
-  .item-text {
+  .content {
     position: relative;
     display: inline-block;
     overflow: hidden;
@@ -61,20 +55,21 @@
     float: left;
   }
 
-  .item-text > button {
-    text-align: center;
+  .content > button {
     height: 20px;
-    float: left;
-  }
-
-  .text {
-    height: 20px;
-    line-height: 20px;
-    display: inline-block;
     margin-left: -2px;
   }
 
-  .animation {
+  .text-box {
+    height: 20px;
+    line-height: 20px;
+    display: inline-block;
+    margin-left: -3px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .underline {
     position: absolute;
     left: 0;
     bottom: 1px;
@@ -86,14 +81,13 @@
   }
 
   /* duang的特效 */
-  .item:hover .animation {
+  .text-box:hover .underline {
     width: 100%;
     transition: width 1s ease;
   }
 
-  .item:hover .text {
-    transition: transform 3s 1s ease;
-    transform: translateX(-100%);
+  .text {
+    display: inline-block;
   }
 </style>
 <script>
@@ -131,7 +125,9 @@
           height: '20px',
           lineHeight: '20px'
         },
-        val: ''
+        val: '',
+        isMouseover: false,
+        textMoveLeft: {}
       }
     },
     methods: {
@@ -146,10 +142,6 @@
           name: this.val
         })
       },
-      log () {
-        console.log(this.data.name)
-      },
-
       // 隐藏显示子节点
       hideOrShow (val) {
         if (val.hidden === undefined) {
@@ -199,18 +191,33 @@
           done()
         }
       },
-      isHover () {
+      // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
+      mouseHover () {
+        // 如果没有隐藏超出的，直接返回
+        if (!this.settings.isOverflowHidden.enabled) {
+          return
+        }
         // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let DOM = this.$refs.test
-//        console.log(DOM)
-//        console.log(DOM.clientWidth)
+        let DOM = this.$refs.parent
         let DOM2 = this.$refs.child
-//        console.log(DOM2.clientWidth)
-        let result = DOM2.clientWidth +
-          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level +
-          28 - DOM.clientWidth
-        console.log(result)
-//        debugger
+        // offset是额外偏差值，即给动画后的文字的右边留空
+        let offset = this.settings.isOverflowHidden.offset
+        // 动画时间
+        let anitmateTime = this.settings.isOverflowHidden.animateTime
+        let result = DOM2.clientWidth + Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level - DOM.clientWidth + offset
+        if (result > 0) {
+          this.isMouseover = true
+          this.textMoveLeft.transform = `translateX(-${result}px)`
+          this.textMoveLeft.transition = `transform ${anitmateTime}s 1s ease`
+        }
+      },
+      mouseOut () {
+        if (!this.settings.isOverflowHidden.enabled) {
+          return
+        }
+        this.isMouseover = false
+        this.textMoveLeft.transform = `translateX(0)`
+        this.textMoveLeft.transition = ``
       }
     },
     computed: {
@@ -220,12 +227,14 @@
         }
 
         if (this.settings.isOverflowHidden) {
-          style.maxWidth = '100%'
+          style['max-width'] = '100%'
           style['overflow-x'] = 'hidden'
           style['text-overflow'] = 'ellipsis'
           style['white-space'] = 'no-wrap'
         }
 
+        style['height'] = this.style.height
+        style['line-height'] = this.style.lineHeight
         return style
       },
       style () {
