@@ -9,14 +9,13 @@
     <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
       <div class="content" :style="contentStyle" ref="child">
         <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
-          <button v-if="data.children" @click="hideOrShow()">
-            {{isOpened ? '显' : '隐'}}
-          </button>
-          <button v-if="!data.children">无</button>
+          <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
         </div>
         <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover()" @mouseout="mouseOut()">
               <span class="text" :class="textClass" :style="textStyle"
-                    ref="textSpan">{{level}}：{{data.name}}
+                    ref="textSpan">
+                <!--{{level}}：-->
+                {{data.name}}
                 <span :class="{underline:settings.underLine}"></span>
               </span>
           </span>
@@ -68,16 +67,8 @@
     position: relative;
   }
 
-  .btn-box > button {
+  .btn-span {
     display: inline-block;
-    vertical-align: top;
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -moz-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    -o-transform: translateY(-50%);
-    transform: translateY(-50%);
   }
 
   .text-box {
@@ -315,6 +306,9 @@
           'isMouseover': this.isMouseover,
           'text-is-ellipsis': this.settings.isOverflowHidden.enabled && this.settings.isOverflowHidden.isEllipsis
         }
+      },
+      btnSpanStyle () {
+        return Object.assign({}, this.btnBoxStyle, {opacity: (this.data.children ? 1 : 0)})
       }
     },
     components: {

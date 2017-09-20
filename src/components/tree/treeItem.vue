@@ -10,14 +10,13 @@
       <div class="afterBackSpace" :style="itemStyle">
         <div class="content" ref="child">
           <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <button v-if="data.children" @click="hideOrShow()">
-              {{data.isOpened ? '显' : '隐'}}
-            </button>
-            <button v-if="!data.children">无</button>
+            <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
           </div>
           <span class="text-box" @mouseover="mouseHover" @mouseout="mouseOut">
             <span class="text" :class="textClass"
-                  :style="textSpan" ref="textSpan">{{level}}：{{data.name}}
+                  :style="textSpan" ref="textSpan">
+              <!--{{level}}：-->
+              {{data.name}}
             <span :class="{underline:settings.underLine}"></span></span>
           </span>
         </div>
@@ -57,22 +56,19 @@
     float: left;
   }
 
+  .open-btn-nochildren {
+    white-space: pre;
+    display: inline-block;
+  }
+
   .btn-box {
     display: inline-block;
     float: left;
     position: relative;
   }
 
-  .btn-box > button {
+  .btn-span {
     display: inline-block;
-    vertical-align: top;
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -moz-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    -o-transform: translateY(-50%);
-    transform: translateY(-50%);
   }
 
   .text-box {
@@ -317,6 +313,9 @@
           'isMouseover': this.isMouseover,
           'text-is-ellipsis': this.settings.isOverflowHidden.enabled && this.settings.isOverflowHidden.isEllipsis
         }
+      },
+      btnSpanStyle () {
+        return Object.assign({}, this.btnBoxStyle, {opacity: (this.data.children ? 1 : 0)})
       }
     }
   }
