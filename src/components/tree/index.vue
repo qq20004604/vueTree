@@ -79,6 +79,13 @@
             isEllipsis: false,
             offset: 5,  // 单位px
             animateTime: 1.5  // 单位秒
+          },
+          // 展开结点的配置
+          openBtn: {
+            // 是否启用，默认是
+            enabled: true,
+            // 初始情况是否全部展开，默认false，只展开第一级。true则全部展开
+            defaultOpened: false
           }
         },
         testData: [

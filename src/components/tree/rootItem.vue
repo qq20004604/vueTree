@@ -8,9 +8,9 @@
   <div :style="rootStyle" class="root">
     <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
       <div class="content" :style="contentStyle" ref="child">
-        <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
-          <button v-if="data.children" @click="hideOrShow(data)">
-            {{data.hidden ? '隐' : '显'}}
+        <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
+          <button v-if="data.children" @click="hideOrShow()">
+            {{isOpened ? '显' : '隐'}}
           </button>
           <button v-if="!data.children">无</button>
         </div>
@@ -27,7 +27,7 @@
       v-on:before-enter="beforeEnter"
       v-on:enter="enter"
       v-on:leave="leave">
-      <div v-if="!data.hidden" style="transform-origin: 50% 0;">
+      <div v-if="isOpened" style="transform-origin: 50% 0;">
         <template v-for="(val, key) in data.children">
           <item :data="val" :level="Number(level + 1)" :options="options" :settings="settings" ref="item"></item>
         </template>
@@ -145,15 +145,13 @@
       return {
         level: 0,
         isMouseover: false, // 当前鼠标是否移动上去了
-        textSpan: {}
+        textSpan: {},
+        isOpened: true
       }
     },
     methods: {
-      hideOrShow (val) {
-        if (val.hidden === undefined) {
-          this.$set(val, 'hidden', false)
-        }
-        val.hidden = !val.hidden
+      hideOrShow () {
+        this.isOpened = !this.isOpened
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {

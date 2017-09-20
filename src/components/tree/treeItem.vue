@@ -9,9 +9,9 @@
     <div class="line" :style="style" :lv="level" ref="parent">
       <div class="afterBackSpace" :style="itemStyle">
         <div class="content" ref="child">
-          <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <button v-if="data.children" @click="hideOrShow(data)">
-              {{data.hidden ? '隐' : '显'}}
+          <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
+            <button v-if="data.children" @click="hideOrShow()">
+              {{data.isOpened ? '显' : '隐'}}
             </button>
             <button v-if="!data.children">无</button>
           </div>
@@ -27,7 +27,7 @@
       v-on:before-enter="beforeEnter"
       v-on:enter="enter"
       v-on:leave="leave">
-      <div style="transform-origin: 50% 0;" v-if="!data.hidden">
+      <div style="transform-origin: 50% 0;" v-if="isOpened">
         <template v-for="(val, k) in data.children">
           <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"
                      key="{{k}}" ref="item"></tree-item>
@@ -140,6 +140,13 @@
         }
       }
     },
+    created () {
+      if (this.settings.openBtn.defaultOpened) {
+        this.isOpened = true
+      } else {
+        this.isOpened = false
+      }
+    },
     mounted () {
       this.setTextSpanWidth()
     },
@@ -151,7 +158,8 @@
         },
         val: '',
         isMouseover: false,
-        textSpan: {}
+        textSpan: {},
+        isOpened: false
       }
     },
     methods: {
@@ -167,11 +175,8 @@
         })
       },
       // 隐藏显示子节点
-      hideOrShow (val) {
-        if (val.hidden === undefined) {
-          this.$set(val, 'hidden', false)
-        }
-        val.hidden = !val.hidden
+      hideOrShow () {
+        this.isOpened = !this.isOpened
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
