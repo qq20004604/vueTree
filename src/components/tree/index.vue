@@ -75,6 +75,7 @@
             enabled: true,
             // 这个表示是否超出部分显示三个点（本项生效将导致下面的跑马灯方式不生效）
             // 当启用这个选项时，需要在组件的根节点的宽度变化时，手动触发本组件的resize()方法
+            // 另注：需要通过$nextTick的回调函数来触发（见示例）
             isEllipsis: true,
             offset: 5,  // 单位px
             animateTime: 1.5  // 单位秒

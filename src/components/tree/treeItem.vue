@@ -254,6 +254,7 @@
             Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
             btnBoxDOM.clientWidth
           if (width > textSpanDOM.clientWidth) {
+            this.$delete(this.textSpan, 'width', width + 'px')
             return
           }
           this.$set(this.textSpan, 'width', width + 'px')
