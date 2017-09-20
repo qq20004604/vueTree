@@ -1,51 +1,56 @@
 /**
-* Created by 王冬 on 2017/9/5.
+* Created by 王冬 on 2017/9/20.
 * QQ: 20004604
 * weChat: qq20004604
 */
 
 <template>
-  <div>
-    <div class="line" :style="style" :lv="level" ref="parent">
-      <div class="afterBackSpace" :style="itemStyle">
-        <div class="content" ref="child">
-          <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <button v-if="data.children" @click="hideOrShow(data)">
-              {{data.hidden ? '隐' : '显'}}
-            </button>
-            <button v-if="!data.children">无</button>
-          </div>
-          <span class="text-box" @mouseover="mouseHover" @mouseout="mouseOut">
-            <span class="text" :class="textClass"
-                  :style="textSpan" ref="textSpan">{{level}}：{{data.name}}
-            <span :class="{underline:settings.underLine}"></span></span>
-          </span>
+  <div :style="rootStyle" class="root">
+    <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
+      <div class="content" :style="contentStyle" ref="child">
+        <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
+          <button v-if="data.children" @click="hideOrShow(data)">
+            {{data.hidden ? '隐' : '显'}}
+          </button>
+          <button v-if="!data.children">无</button>
         </div>
+        <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover()" @mouseout="mouseOut()">
+              <span class="text" :class="textClass" :style="textStyle"
+                    ref="textSpan">{{level}}：{{data.name}}
+                <span :class="{underline:settings.underLine}"></span>
+              </span>
+          </span>
       </div>
     </div>
+
     <transition
       v-on:before-enter="beforeEnter"
       v-on:enter="enter"
       v-on:leave="leave">
-      <div style="transform-origin: 50% 0;" v-if="!data.hidden">
-        <template v-for="(val, k) in data.children">
-          <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"
-                     key="{{k}}" ref="item"></tree-item>
+      <div v-if="!data.hidden" style="transform-origin: 50% 0;">
+        <template v-for="(val, key) in data.children">
+          <item :data="val" :level="Number(level + 1)" :options="options" :settings="settings" ref="item"></item>
         </template>
       </div>
     </transition>
   </div>
 </template>
 <style scoped>
-  .line {
-    display: block;
-    overflow: hidden;
-    white-space: nowrap;
+
+  /* 列表的根结点的样式（可能有多个根结点）（含他的子节点部分） */
+  .root {
+    min-width: 100%;
   }
 
-  .afterBackSpace {
+  /* 第一层根结点（只有根节点）（不含其它子节点） */
+  .topItem {
+    width: 100%;
+    font-size: 20px;
+    background-color: red;
     cursor: pointer;
     position: relative;
+    white-space: nowrap;
+    overflow: hidden;
   }
 
   .content {
@@ -79,7 +84,7 @@
     height: 20px;
     line-height: 20px;
     display: inline-block;
-    /*margin-left: -3px;*/
+    /*margin-left: -3px; !*处理空格带来的空白*!*/
     overflow: hidden;
     position: relative;
   }
@@ -112,25 +117,18 @@
 
 </style>
 <script>
+  import item from './treeItem.vue'
   import Velocity from 'velocity-animate'
 
   export default {
-    name: 'tree-item',
     props: {
       data: {
         type: Object
       },
-      level: {
-        type: Number
-      },
       options: {
         type: Object,
         default () {
-          return {
-            topItemStyle: {},
-            itemStyle: {},
-            backSpace: 20
-          }
+          return {}
         }
       },
       settings: {
@@ -145,28 +143,12 @@
     },
     data () {
       return {
-        itemDefaultStyle: {
-          height: '20px',
-          lineHeight: '20px'
-        },
-        val: '',
-        isMouseover: false,
+        level: 0,
+        isMouseover: false, // 当前鼠标是否移动上去了
         textSpan: {}
       }
     },
     methods: {
-      addItem () {
-        if (this.val.length === 0) {
-          return
-        }
-        if (!this.data.children) {
-          this.$set(this.data, 'children', [])
-        }
-        this.data.children.push({
-          name: this.val
-        })
-      },
-      // 隐藏显示子节点
       hideOrShow (val) {
         if (val.hidden === undefined) {
           this.$set(val, 'hidden', false)
@@ -234,10 +216,9 @@
           this.textSpan.transform = `translateX(-${result}px)`
           this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
         }
-        console.log(this.textSpan)
       },
       mouseOut () {
-        if (!this.settings.isOverflowHidden.enabled) {
+        if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
           return
         }
         this.isMouseover = false
@@ -272,31 +253,55 @@
       }
     },
     computed: {
-      itemStyle () {
-        let style = {
-          paddingLeft: (this.settings.backSpace ? this.settings.backSpace : '20') * this.level + 'px'
-        }
+      defaultRootStyle () {
+        let style = {}
+        // 如果overflow隐藏，那么添加overflow
+        if (this.settings.isOverflowHidden.enabled) {
 
-        if (this.settings.isOverflowHidden) {
-          style['max-width'] = '100%'
-          style['overflow-x'] = 'hidden'
-          style['text-overflow'] = 'ellipsis'
-          style['white-space'] = 'no-wrap'
         }
-
-        style['height'] = this.style.height
-        style['line-height'] = this.style.lineHeight
         return style
       },
-      style () {
-        let style = Object.assign({}, this.options.itemStyle, this.itemDefaultStyle)
+      rootStyle () {
+        if (this.options.listStyle) {
+          return Object.assign(this.options.rootStyle, this.defaultRootStyle)
+        } else {
+          return this.rootStyle
+        }
+      },
+      topItemStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+
+        if (this.options.topItemStyle) {
+          return Object.assign({}, this.options.topItemStyle, style)
+        } else {
+          return style
+        }
+      },
+      contentStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
         return style
       },
       btnBoxStyle () {
         let style = {}
-        style['height'] = this.options.itemStyle.height ? this.options.itemStyle.height : '20px'
-        style['line-height'] = this.options.itemStyle.lineHeight ? this.options.itemStyle.lineHeight : '20px'
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
         return style
+      },
+      textBoxStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return style
+      },
+      textStyle () {
+        let style = {}
+        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
+        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        return Object.assign({}, this.textSpan, style)
       },
       textClass () {
         return {
@@ -304,6 +309,9 @@
           'text-is-ellipsis': this.settings.isOverflowHidden.enabled && this.settings.isOverflowHidden.isEllipsis
         }
       }
+    },
+    components: {
+      item
     }
   }
 </script>

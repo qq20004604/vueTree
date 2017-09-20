@@ -8,43 +8,11 @@
 <template>
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in testData">
-      <div :style="rootStyle" class="root">
-        <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
-          <div class="content" :style="contentStyle" ref="child">
-            <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
-              <button v-if="v.children" @click="hideOrShow(v)">
-                {{v.hidden ? '隐' : '显'}}
-              </button>
-              <button v-if="!v.children">无</button>
-            </div>
-            <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover(k)" @mouseout="mouseOut(k)">
-              <span class="text" :class="textClass"
-                    :style="textStyle">{{level}}：{{v.name}}
-                <span :class="{underline:mixinSetting.underLine}"></span>
-              </span>
-          </span>
-          </div>
-        </div>
-
-        <transition
-          v-on:before-enter="beforeEnter"
-          v-on:enter="enter"
-          v-on:leave="leave">
-          <div v-if="!v.hidden" style="transform-origin: 50% 0;">
-            <template v-for="(val, key) in v.children">
-              <item :data="val" :level="Number(level + 1)" :options="options" :settings="mixinSetting"></item>
-            </template>
-          </div>
-        </transition>
-      </div>
+      <root-item :options="options" :data="v" :settings="mixinSetting" ref="item"></root-item>
     </template>
   </div>
 </template>
 <style scoped>
-  .item {
-    cursor: pointer;
-  }
-
   /* 整个列表的样式 */
   .list {
     position: relative;
@@ -55,88 +23,9 @@
     height: 100%; /*宽度（默认撑满）*/
   }
 
-  /* 列表的根结点的样式（可能有多个根结点）（含他的子节点部分） */
-  .root {
-    min-width: 100%;
-  }
-
-  /* 第一层根结点（只有根节点）（不含其它子节点） */
-
-  .topItem {
-    width: 100%;
-    font-size: 20px;
-    background-color: red;
-    cursor: pointer;
-    position: relative;
-    white-space: nowrap;
-    overflow: hidden;
-  }
-
-  .content {
-    position: relative;
-    display: inline-block;
-    overflow: hidden;
-    height: 20px;
-    line-height: 20px;
-    float: left;
-  }
-
-  .btn-box {
-    display: inline-block;
-    float: left;
-    position: relative;
-  }
-
-  .btn-box > button {
-    display: inline-block;
-    vertical-align: top;
-    position: relative;
-    top: 50%;
-    -webkit-transform: translateY(-50%);
-    -moz-transform: translateY(-50%);
-    -ms-transform: translateY(-50%);
-    -o-transform: translateY(-50%);
-    transform: translateY(-50%);
-  }
-
-  .text-box {
-    height: 20px;
-    line-height: 20px;
-    display: inline-block;
-    /*margin-left: -3px; !*处理空格带来的空白*!*/
-    overflow: hidden;
-    position: relative;
-  }
-
-  .underline {
-    position: absolute;
-    left: 0;
-    bottom: 1px;
-    height: 1px;
-    z-index: 1;
-    width: 0;
-    background-color: #fff;
-    width: 0%;
-  }
-
-  /* duang的特效 */
-  .text-box:hover .underline {
-    width: 100%;
-    transition: width 1s ease;
-  }
-
-  .text {
-    display: inline-block;
-  }
-
-  .text-is-ellipsis {
-    text-overflow: ellipsis;
-    overflow: hidden;
-  }
 </style>
 <script>
-  import item from './treeItem.vue'
-  import Velocity from 'velocity-animate'
+  import rootItem from './rootItem.vue'
 
   export default {
     props: {
@@ -163,14 +52,6 @@
       }
     },
     mounted () {
-//      if (this.mixinSetting.isOverflowHidden.isEllipsis) {
-//        let parentDom = this.$refs.parent
-//        let btnBoxDom = this.$refs.btnBox
-//        console.log(parentDom, btnBoxDom)
-//        let width = $refs.parent.clientWidth -
-//          $refs.btnBox.clientWidth + 'px'
-//        this.$set(this.textSpan, 'width', width)
-//      }
     },
     data () {
       return {
@@ -193,6 +74,7 @@
           isOverflowHidden: {
             enabled: true,
             // 这个表示是否超出部分显示三个点（本项生效将导致下面的跑马灯方式不生效）
+            // 当启用这个选项时，需要在组件的根节点的宽度变化时，手动触发本组件的resize()方法
             isEllipsis: true,
             offset: 5,  // 单位px
             animateTime: 1.5  // 单位秒
@@ -611,88 +493,7 @@
               }
             ]
           }
-        ],
-        level: 0,
-        isMouseover: false, // 当前鼠标是否移动上去了
-        textSpan: {}
-      }
-    },
-    methods: {
-      hideOrShow (val) {
-        if (val.hidden === undefined) {
-          this.$set(val, 'hidden', false)
-        }
-        val.hidden = !val.hidden
-      },
-      // 过渡动画，过渡过程中点击无效
-      beforeEnter (el) {
-        if (this.mixinSetting.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-        }
-      },
-      // 进入时主要执行函数
-      enter (el, done) {
-        // 这个只执行一次
-        if (this.mixinSetting.transitions.enabled) {
-          // 需要获取真实时间
-          let height = el.offsetHeight
-          Velocity(el, {scaleY: 0, height: 0}, {duration: 1})
-          Velocity(el, {scaleY: 1, height}, {
-            duration: this.mixinSetting.transitions.enterDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              // 必须额外加下面这句，否则相当于height被设置了，而不是自适应
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
-      },
-      // 退出时主要执行函数
-      leave (el, done) {
-        if (this.mixinSetting.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-          Velocity(el, {scaleY: 0, height: 0}, {
-            duration: this.mixinSetting.transitions.leaveDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
-      },
-      // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
-      mouseHover (index) {
-        // 如果没有隐藏超出的，直接返回
-        if (!this.mixinSetting.isOverflowHidden.enabled || this.mixinSetting.isOverflowHidden.isEllipsis) {
-          return
-        }
-        // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let DOM = this.$refs.parent[index]
-        let DOM2 = this.$refs.child[index]
-        // offset是额外偏差值，即给动画后的文字的右边留空
-        let offset = this.mixinSetting.isOverflowHidden.offset
-        // 动画时间
-        let anitmateTime = this.mixinSetting.isOverflowHidden.animateTime
-        let result = DOM2.clientWidth + Number(this.mixinSetting.backSpace ? this.mixinSetting.backSpace : '20') * this.level - DOM.clientWidth + offset
-        if (result > 0) {
-          this.isMouseover = true
-          this.textSpan.transform = `translateX(-${result}px)`
-          this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
-        }
-      },
-      mouseOut () {
-        if (!this.mixinSetting.isOverflowHidden.enabled || this.mixinSetting.isOverflowHidden.isEllipsis) {
-          return
-        }
-        this.isMouseover = false
-        this.textSpan.transform = `translateX(0)`
-        this.textSpan.transition = ``
+        ]
       }
     },
     computed: {
@@ -713,68 +514,23 @@
           return this.defaultListStyle
         }
       },
-      defaultRootStyle () {
-        let style = {}
-        // 如果overflow隐藏，那么添加overflow
-        if (this.mixinSetting.isOverflowHidden.enabled) {
-
-        }
-        return style
-      },
-      rootStyle () {
-        if (this.options.listStyle) {
-          return Object.assign(this.options.rootStyle, this.defaultRootStyle)
-        } else {
-          return this.rootStyle
-        }
-      },
-      topItemStyle () {
-        let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-
-        if (this.options.topItemStyle) {
-          return Object.assign({}, this.options.topItemStyle, style)
-        } else {
-          return style
-        }
-      },
       mixinSetting () {
         return Object.assign({}, this.defaultSettings, this.settings)
-      },
-      contentStyle () {
-        let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-        return style
-      },
-      btnBoxStyle () {
-        let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-        return style
-      },
-      textBoxStyle () {
-        let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-        return style
-      },
-      textStyle () {
-        let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-        return Object.assign({}, this.textSpan, style)
-      },
-      textClass () {
-        return {
-          'isMouseover': this.isMouseover,
-          'text-is-ellipsis': this.mixinSetting.isOverflowHidden.enabled && this.mixinSetting.isOverflowHidden.isEllipsis
+      }
+    },
+    methods: {
+      // 如果改变了根节点的宽度，或者其他需要重绘的情况，需要手动调用这个方法
+      resize () {
+        if (!this.$refs.item || this.$refs.item.length === 0) {
+          return
         }
+        this.$refs.item.forEach(item => {
+          item.resize()
+        })
       }
     },
     components: {
-      item
+      rootItem
     }
   }
 </script>

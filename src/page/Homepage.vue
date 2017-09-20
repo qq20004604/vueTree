@@ -1,12 +1,15 @@
 <template>
   <div class="app">
-    <tree :options="options" :settings="settings"></tree>
+    <tree :options="options" :settings="settings" ref="tree"></tree>
   </div>
 </template>
 <script>
   import tree from 'component/tree'
 
   export default {
+    mounted () {
+      window.tree = this.$refs.tree
+    },
     data () {
       return {
         options: {
