@@ -235,8 +235,13 @@
           parentDOM.clientWidth + offset
         if (result > 0) {
           this.isMouseover = true
-          this.textSpan.transform = `translateX(-${result}px)`
-          this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
+          if (this.textSpan.transform) {
+            this.textSpan.transform = `translateX(-${result}px)`
+            this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
+          } else {
+            this.$set(this.textSpan, 'transform', `translateX(-${result}px)`)
+            this.$set(this.textSpan, 'transition', `transform ${anitmateTime}s 1s ease`)
+          }
         }
       },
       mouseOut () {
@@ -244,8 +249,8 @@
           return
         }
         this.isMouseover = false
-        this.textSpan.transform = `translateX(0)`
-        this.textSpan.transition = ``
+        this.$delete(this.textSpan, 'transform')
+        this.$delete(this.textSpan, 'transition')
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {

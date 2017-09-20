@@ -204,17 +204,25 @@
           return
         }
         // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let DOM = this.$refs.parent
-        let DOM2 = this.$refs.child
+        let parentDOM = this.$refs.parent
+        let btnBoxDOM = this.$refs.btnBox
+        let textSpanDOM = this.$refs.textSpan
         // offset是额外偏差值，即给动画后的文字的右边留空
         let offset = this.settings.isOverflowHidden.offset
         // 动画时间
         let anitmateTime = this.settings.isOverflowHidden.animateTime
-        let result = DOM2.clientWidth + Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level - DOM.clientWidth + offset
+        let result = textSpanDOM.clientWidth +
+          btnBoxDOM.clientWidth -
+          parentDOM.clientWidth + offset
         if (result > 0) {
           this.isMouseover = true
-          this.textSpan.transform = `translateX(-${result}px)`
-          this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
+          if (this.textSpan.transform) {
+            this.textSpan.transform = `translateX(-${result}px)`
+            this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
+          } else {
+            this.$set(this.textSpan, 'transform', `translateX(-${result}px)`)
+            this.$set(this.textSpan, 'transition', `transform ${anitmateTime}s 1s ease`)
+          }
         }
       },
       mouseOut () {
@@ -222,8 +230,8 @@
           return
         }
         this.isMouseover = false
-        this.textSpan.transform = `translateX(0)`
-        this.textSpan.transition = ``
+        this.$delete(this.textSpan, 'transform')
+        this.$delete(this.textSpan, 'transition')
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
