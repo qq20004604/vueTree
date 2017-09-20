@@ -54,6 +54,9 @@
       },
       changeOverflow () {
         this.settings.isOverflowHidden.isEllipsis = !this.settings.isOverflowHidden.isEllipsis
+        this.$nextTick(() => {
+          this.$refs.tree.resize()
+        })
       }
     },
     computed: {

@@ -554,7 +554,6 @@
 
         let newFirst = deepCopy(first)
         let result = deepCopy(second, newFirst)
-        console.log(result)
         return result
       }
     },

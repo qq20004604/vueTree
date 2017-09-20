@@ -227,17 +227,17 @@
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
+        let parentDOM = this.$refs.parent
+        let btnBoxDOM = this.$refs.btnBox
+        let textSpanDOM = this.$refs.textSpan
+        let width = parentDOM.clientWidth -
+          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
+          btnBoxDOM.clientWidth
+        if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
+          this.$delete(this.textSpan, 'width', width + 'px')
+          return
+        }
         if (this.settings.isOverflowHidden.isEllipsis) {
-          let parentDOM = this.$refs.parent
-          let btnBoxDOM = this.$refs.btnBox
-          let textSpanDOM = this.$refs.textSpan
-          let width = parentDOM.clientWidth -
-            Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
-            btnBoxDOM.clientWidth
-          if (width > textSpanDOM.clientWidth) {
-            this.$delete(this.textSpan, 'width', width + 'px')
-            return
-          }
           this.$set(this.textSpan, 'width', width + 'px')
         }
       },
