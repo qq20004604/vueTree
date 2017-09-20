@@ -222,19 +222,22 @@
           return
         }
         // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let DOM = this.$refs.parent
-        let DOM2 = this.$refs.child
+        let parentDOM = this.$refs.parent
+        let btnBoxDOM = this.$refs.btnBox
+        let textSpanDOM = this.$refs.textSpan
         // offset是额外偏差值，即给动画后的文字的右边留空
         let offset = this.settings.isOverflowHidden.offset
         // 动画时间
         let anitmateTime = this.settings.isOverflowHidden.animateTime
-        let result = DOM2.clientWidth + Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level - DOM.clientWidth + offset
+        let result = textSpanDOM.clientWidth +
+          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level +
+          btnBoxDOM.clientWidth -
+          parentDOM.clientWidth + offset
         if (result > 0) {
           this.isMouseover = true
           this.textSpan.transform = `translateX(-${result}px)`
           this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
         }
-        console.log(this.textSpan)
       },
       mouseOut () {
         if (!this.settings.isOverflowHidden.enabled) {

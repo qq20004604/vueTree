@@ -76,7 +76,7 @@
             // 这个表示是否超出部分显示三个点（本项生效将导致下面的跑马灯方式不生效）
             // 当启用这个选项时，需要在组件的根节点的宽度变化时，手动触发本组件的resize()方法
             // 另注：需要通过$nextTick的回调函数来触发（见示例）
-            isEllipsis: true,
+            isEllipsis: false,
             offset: 5,  // 单位px
             animateTime: 1.5  // 单位秒
           }
@@ -516,7 +516,7 @@
         }
       },
       mixinSetting () {
-        return Object.assign({}, this.defaultSettings, this.settings)
+        return this.deepMixin(this.defaultSettings, this.settings)
       }
     },
     methods: {
@@ -528,6 +528,34 @@
         this.$refs.item.forEach(item => {
           item.resize()
         })
+      },
+      // 深度合并
+      deepMixin (first, second) {
+        function deepCopy (from, base) {
+          let temp
+          if (base) {
+            temp = base
+          } else {
+            temp = {}
+          }
+          Object.keys(from).forEach(function (key) {
+            let type = Object.prototype.toString.call(from[key])
+            if (type === '[object Object]' || type === '[object Array]') {
+              temp[key] = deepCopy(from[key], temp[key])
+              if (type === '[object Array]') {
+                temp[key] = Array.from(temp[key])
+              }
+            } else {
+              temp[key] = from[key]
+            }
+          })
+          return temp
+        }
+
+        let newFirst = deepCopy(first)
+        let result = deepCopy(second, newFirst)
+        console.log(result)
+        return result
       }
     },
     components: {
