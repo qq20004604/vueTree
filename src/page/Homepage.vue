@@ -3,6 +3,7 @@
     <div class="app" :style="boxStyle">
       <tree :options="options" :settings="settings" ref="tree"></tree>
     </div>
+    <a href="https://github.com/qq20004604/vueTree" style="text-decoration: underline;">点击查看Github链接</a>
     <button @click="repaint">改变组件父容器宽度并触发重绘</button>
     <button @click="changeOverflow">改变超出部分的处理方式（三个点或者是走马灯）</button>
   </div>

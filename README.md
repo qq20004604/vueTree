@@ -7,6 +7,8 @@ run
 
 附赠vue脚手架一套
 
+在线版DEMO：[http://www.jianwangsan.cn/vue-tree/index.html#/](http://www.jianwangsan.cn/vue-tree/index.html#/)
+
 <h2>树的结构</h2>
 
 多根节点结构（index.vue）
