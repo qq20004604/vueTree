@@ -7,7 +7,7 @@
 
 <template>
   <div :style="listStyle" class="list">
-    <template v-for="(v, k) in data">
+    <template v-for="(v, k) in Data">
       <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"></root-node>
     </template>
   </div>
@@ -26,7 +26,7 @@
 </style>
 <script>
   import rootNode from './rootNode.vue'
-  import {deepCopy, defaultSettings, testData} from './public'
+  import {deepCopy, defaultSettings} from './public'
 
   export default {
     props: {
@@ -50,16 +50,18 @@
         default () {
           return {}
         }
+      },
+      data: {
+        type: [Object, Array],
+        default () {
+          return {}
+        }
       }
     },
     created () {
-      // todo 测试代码
-      this.data = testData
     },
     data () {
-      return {
-        data: {}
-      }
+      return {}
     },
     computed: {
       defaultListStyle () {
@@ -81,6 +83,13 @@
       },
       mixinSetting () {
         return this.deepMixin(defaultSettings, this.settings)
+      },
+      Data () {
+        if (Object.prototype.toString.call(this.data) !== '[object Array]') {
+          return [this.data]
+        } else {
+          return this.data
+        }
       }
     },
     methods: {

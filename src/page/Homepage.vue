@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="app" :style="boxStyle">
-      <tree :styleOptions="styleOptions" :settings="settings" ref="tree"></tree>
+      <tree :styleOptions="styleOptions" :settings="settings" ref="tree" :data="data"></tree>
     </div>
     <a href="https://github.com/qq20004604/vueTree" style="text-decoration: underline;">点击查看Github链接</a>
     <button @click="repaint">改变组件父容器宽度并触发重绘</button>
@@ -10,6 +10,7 @@
 </template>
 <script>
   import tree from 'component/tree'
+  import {testData} from 'component/tree/public'
 
   export default {
     mounted () {
@@ -82,7 +83,8 @@
         },
         test: {
           isWider: true
-        }
+        },
+        data: testData
       }
     },
     name: 'Homepage',
