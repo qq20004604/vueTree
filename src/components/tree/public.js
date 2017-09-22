@@ -50,11 +50,11 @@ const defaultSettings = {
     customIcon: false,
     // 开启时图标（如果图片比较小的话，建议转为base64字符串直接赋值）
     // 自动转码页面（我自己的）：http://www.jianwangsan.cn/%E5%9B%BE%E7%89%87tobase64.html
-    openedIconImage: '',
+    openedIcon: '',
     // 关闭时图标
-    closedIconImage: '',
+    closedIcon: '',
     // 没有子节点时图标
-    noneIconImage: {
+    noChildIcon: {
       // 是否启用，不启用的话则显示为空白，默认false
       enabled: false,
       // 是否使用统一的自定义图标，默认为true
@@ -66,6 +66,13 @@ const defaultSettings = {
       // 当自定义图标的key检测不到时，会使用下面这个url作为链接
       withOutCustomIconKey: ''
     }
+  },
+  // 选中按钮（不选、全选、半选）
+  checkBox: {
+    enabled: true,
+    checkedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAd0lEQVR4Ac3LzQnFIBDE8YX0F0xDwWLy0Y9VvLWJieEdFmFw9SBk5vr/yWeHDYrWMgLkveB/hTetQcf6QRoDBxZEF1S5MODnFKRGTsBegpvnHERIiS6aE2DkpDkBRlhOgBGWE2CE5QzYJoAMb78aBKiTrwaGPh88kDQO8EIv0iYAAAAASUVORK5CYII=',
+    halfCheckedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAfElEQVRIie2UQQqAMAwEJ+IX1GeJj+jjq49YD1IoBau26MUO9BBCstlDFxpPkLRI8ipnlTRLIjxLBDwwVt65AlMoUgEBmJlRQJiP93Yli57Q55rRRVlyjl930ASaQBO4+MmlmRTzuYMNGO5m0Ak+LlIHjiPPa5a7ivk/sgO4oWjNa/J75wAAAABJRU5ErkJggg==',
+    uncheckedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAPklEQVQ4y2NgGKzgf+D/l//xgVf//VE14FcOAi9RNQABXhegy49qGNUwcBpeEUzeL1A1+BPIES/++w7a3A8AARf7kVFAnRoAAAAASUVORK5CYII='
   }
 }
 
@@ -553,8 +560,8 @@ function DOMAnimationWhenLeave (el, done, settings) {
 }
 
 /*  当鼠标移动上去时触发本事件
-*   参数isNode表示是否是子节点，true为是，默认不是
-* */
+ *   参数isNode表示是否是子节点，true为是，默认不是
+ * */
 function whenMouseOver (isChildNode) {
   // 如果没有隐藏超出的，直接返回
   if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
@@ -562,7 +569,10 @@ function whenMouseOver (isChildNode) {
   }
   // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
   let parentDOM = this.$refs.parent
-  let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
+  let btnBoxDOM = this.$refs.btnBox
+  if (!btnBoxDOM) {
+    btnBoxDOM = 0
+  }
   let textSpanDOM = this.$refs.textSpan
   // offset是额外偏差值，即给动画后的文字的右边留空
   let offset = this.settings.isOverflowHidden.offset
@@ -602,6 +612,23 @@ function whenMouseOut () {
   this.$delete(this.textSpan, 'transition')
 }
 
+function setTextSpanWidth () {
+  let parentDOM = this.$refs.parent
+  let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
+  let textSpanDOM = this.$refs.textSpan
+  let width = parentDOM.clientWidth -
+    Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level -
+    this.settings.backSpace.additionalBackSpaceForRootNode -
+    btnBoxDOM.clientWidth
+  if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
+    this.$delete(this.textSpan, 'width', width + 'px')
+    return
+  }
+  if (this.settings.isOverflowHidden.isEllipsis) {
+    this.$set(this.textSpan, 'width', width + 'px')
+  }
+}
+
 export {
   deepCopy,
   defaultSettings,
@@ -610,5 +637,6 @@ export {
   DOMAnimationWhenEnter,
   DOMAnimationWhenLeave,
   whenMouseOver,
-  whenMouseOut
+  whenMouseOut,
+  setTextSpanWidth
 }

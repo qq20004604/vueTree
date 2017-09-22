@@ -9,50 +9,63 @@
     <div class="line" :style="style" :lv="level" ref="parent">
       <div class="afterBackSpace" :style="nodeStyle">
         <div class="content" ref="child">
-          <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <!-- 默认图标 -->
-            <template v-if="!settings.openBtn.customIcon">
-              <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
-            </template>
-
-            <!-- 自定义图标 -->
-            <template v-if="settings.openBtn.customIcon">
-              <!-- 有子节点时 -->
-              <template v-if="data.children">
-                <!-- 自定义打开 -->
-                <img v-if="isOpened" :src="settings.openBtn.openedIconImage" alt="" :style="btnSpanStyle"
-                     @click="hideOrShow()">
-                <!-- 自定义关闭 -->
-                <img v-if="!isOpened" :src="settings.openBtn.closedIconImage" alt=""
-                     :style="btnSpanStyle"
-                     @click="hideOrShow()">
+          <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
+            <!-- 点击下拉图标组 -->
+            <template v-if="settings.openBtn.enabled">
+              <!-- 默认图标 -->
+              <template v-if="!settings.openBtn.customIcon">
+                <span class="btn-span" :style="dropBtnStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
               </template>
-              <!-- 无子节点时 -->
-              <template v-if="!data.children">
-                <!-- 关闭自定义图标（显示空白） -->
-                <template v-if="!settings.openBtn.noneIconImage.enabled">
-                  <img class="openbtn-nochildren" :src="settings.openBtn.noneIconImage.defaultImage" alt=""
-                       :style="btnSpanStyle">
+
+              <!-- 自定义图标 -->
+              <template v-if="settings.openBtn.customIcon">
+                <!-- 有子节点时 -->
+                <template v-if="data.children">
+                  <!-- 自定义打开 -->
+                  <img v-if="isOpened" :src="settings.openBtn.openedIcon" alt="" :style="dropBtnStyle"
+                       @click="hideOrShow()">
+                  <!-- 自定义关闭 -->
+                  <img v-if="!isOpened" :src="settings.openBtn.closedIcon" alt=""
+                       :style="dropBtnStyle"
+                       @click="hideOrShow()">
                 </template>
-                <!-- 打开自定义图标 -->
-                <template v-if="settings.openBtn.noneIconImage.enabled">
-                  <!-- 统一使用指定自定义图标 -->
-                  <img v-if="settings.openBtn.noneIconImage.useDefaultImage"
-                       class="openbtn-nochildren" :src="settings.openBtn.noneIconImage.defaultImage" alt=""
-                       :style="btnBoxStyle">
-                  <!-- 使用用户自定义图标 -->
-                  <template v-if="!settings.openBtn.noneIconImage.useDefaultImage">
-                    <!-- 有用户自定义图标时，使用用户自定义图标 -->
-                    <img v-if="data[settings.openBtn.noneIconImage.customIconKey]" class="openbtn-nochildren"
-                         :src="data[settings.openBtn.noneIconImage.customIconKey]" alt=""
+                <!-- 无子节点时 -->
+                <template v-if="!data.children">
+                  <!-- 关闭自定义图标（显示空白） -->
+                  <template v-if="!settings.openBtn.noChildIcon.enabled">
+                    <img class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
+                         :style="dropBtnStyle">
+                  </template>
+                  <!-- 打开自定义图标 -->
+                  <template v-if="settings.openBtn.noChildIcon.enabled">
+                    <!-- 统一使用指定自定义图标 -->
+                    <img v-if="settings.openBtn.noChildIcon.useDefaultImage"
+                         class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
                          :style="btnBoxStyle">
-                    <!-- 没有用户自定义图标时，使用用户默认自定义图标 -->
-                    <img v-if="!data[settings.openBtn.noneIconImage.customIconKey]" class="openbtn-nochildren"
-                         :src="settings.openBtn.noneIconImage.withOutCustomIconKey" alt=""
-                         :style="btnBoxStyle">
+                    <!-- 使用用户自定义图标 -->
+                    <template v-if="!settings.openBtn.noChildIcon.useDefaultImage">
+                      <!-- 有用户自定义图标时，使用用户自定义图标 -->
+                      <img v-if="data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
+                           :src="data[settings.openBtn.noChildIcon.customIconKey]" alt=""
+                           :style="btnBoxStyle">
+                      <!-- 没有用户自定义图标时，使用用户默认自定义图标 -->
+                      <img v-if="!data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
+                           :src="settings.openBtn.noChildIcon.withOutCustomIconKey" alt=""
+                           :style="btnBoxStyle">
+                    </template>
                   </template>
                 </template>
               </template>
+            </template>
+
+            <!-- 点击选中图标组 -->
+            <template v-if="settings.checkBox.enabled">
+              <img v-if="checkedStatus===2" :src="settings.checkBox.checkedIcon" alt=""
+                   :style="checkBoxStyle" @click="changeSelectStatus()">
+              <img v-if="checkedStatus===1" :src="settings.checkBox.halfCheckedIcon" alt=""
+                   :style="checkBoxStyle" @click="changeSelectStatus()">
+              <img v-if="checkedStatus===0" :src="settings.checkBox.uncheckedIcon" alt=""
+                   :style="checkBoxStyle" @click="changeSelectStatus()">
             </template>
           </div>
           <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
@@ -108,6 +121,7 @@
 
   .btn-span {
     display: inline-block;
+    vertical-align: top;
   }
 
   .openbtn-nochildren {
@@ -156,7 +170,8 @@
     DOMAnimationWhenEnter,
     DOMAnimationWhenLeave,
     whenMouseOver,
-    whenMouseOut
+    whenMouseOut,
+    setTextSpanWidth
   } from './public'
 
   export default {
@@ -203,24 +218,35 @@
         },
         isMouseover: false,
         textSpan: {},
-        isOpened: false
+        isOpened: false,
+        checkedStatus: 0  // 0未选, 1半选, 2全选
       }
     },
     methods: {
       /* addNode () {
-        if (this.val.length === 0) {
-          return
-        }
-        if (!this.data.children) {
-          this.$set(this.data, 'children', [])
-        }
-        this.data.children.push({
-          name: this.val
-        })
-      }, */
-      // 隐藏显示子节点
+       if (this.val.length === 0) {
+       return
+       }
+       if (!this.data.children) {
+       this.$set(this.data, 'children', [])
+       }
+       this.data.children.push({
+       name: this.val
+       })
+       }, */
+      // 子节点显示或者隐藏
       hideOrShow () {
         this.isOpened = !this.isOpened
+      },
+      // 选中或者取消选中，会影响子节点和父节点
+      changeSelectStatus () {
+        if (this.checkedStatus === 0) {
+          this.checkedStatus = 1
+        } else if (this.checkedStatus === 1) {
+          this.checkedStatus = 2
+        } else {
+          this.checkedStatus = 0
+        }
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
@@ -244,20 +270,7 @@
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
-        let parentDOM = this.$refs.parent
-        let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
-        let textSpanDOM = this.$refs.textSpan
-        let width = parentDOM.clientWidth -
-          Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level -
-          this.settings.backSpace.additionalBackSpaceForChildNode -
-          btnBoxDOM.clientWidth
-        if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
-          this.$delete(this.textSpan, 'width', width + 'px')
-          return
-        }
-        if (this.settings.isOverflowHidden.isEllipsis) {
-          this.$set(this.textSpan, 'width', width + 'px')
-        }
+        setTextSpanWidth.call(this)
       },
       // 如果改变了根节点的宽度，或者其他需要重绘的情况，需要手动调用这个方法
       resize () {
@@ -305,8 +318,11 @@
           'text-is-ellipsis': this.settings.isOverflowHidden.enabled && this.settings.isOverflowHidden.isEllipsis
         }
       },
-      btnSpanStyle () {
+      dropBtnStyle () {
         return Object.assign({}, this.btnBoxStyle, {opacity: (this.data.children ? 1 : 0)})
+      },
+      checkBoxStyle () {
+        return Object.assign({}, this.btnBoxStyle)
       }
     }
   }
