@@ -8,7 +8,9 @@
 <template>
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in Data">
-      <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"></root-node>
+      <keep-alive>
+        <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"></root-node>
+      </keep-alive>
     </template>
   </div>
 </template>

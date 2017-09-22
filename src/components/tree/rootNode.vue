@@ -214,15 +214,61 @@
       hideOrShow () {
         this.isOpened = !this.isOpened
       },
-      // 选中或者取消选中
+      // 选中或者取消选中，会影响子节点和父节点
       changeSelectStatus () {
-        if (this.checkedStatus === 0) {
+        // 未选中->选中
+        // 半选->选中
+        // 选中->未选中
+        this.checkedStatus = this.checkedStatus === 2 ? 0 : 2
+
+        this.$parent.whenChildNodeCheckedStatusChanged()
+        if (this.$refs.child) {
+          this.$refs.child.forEach(child => {
+            child.whenParentNodeCheckStatusChanged(this.checkedStatus)
+          })
+        }
+      },
+      // 当子节点选中状态变化时，触发本方法
+      whenChildNodeCheckedStatusChanged () {
+        let count = {
+          0: 0,
+          1: 0,
+          2: 0
+        }
+        this.$refs.child.forEach(child => {
+          count[child.getCheckboxStatus()]++
+        })
+        // 如果半选的数目大于0，那么就是即有选中也有未选中，当前节点设为半选
+        // 剩余情况为只有选中和未选中
+        if (count[1] > 0) {
           this.checkedStatus = 1
-        } else if (this.checkedStatus === 1) {
+        } else if (count[0] > 0 && count[2] > 0) {
+          // 两种都有的话，就是半选了
+          this.checkedStatus = 1
+        } else if (count[0] === 0) {
+          // 未选中为0说明全选，不然就是未选
           this.checkedStatus = 2
         } else {
           this.checkedStatus = 0
         }
+      },
+      // 当父节点选中状态变化时，触发本方法
+      whenParentNodeCheckStatusChanged (parentNodeIsChecked) {
+        // 如果当前状态和父节点传递过来的状态相同，说明无需改变
+        if (this.checkedStatus === parentNodeIsChecked) {
+          return
+        }
+        // 设置当前子节点状态为父节点状态，并向下递归传递
+        this.checkedStatus = parentNodeIsChecked
+        if (this.$refs.child) {
+          this.$refs.child.forEach(child => {
+            child.whenParentNodeCheckStatusChanged(parentNodeIsChecked)
+          })
+        }
+      },
+      // 返回当前子节点的状态
+      getCheckboxStatus () {
+        return this.checkedStatus
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
