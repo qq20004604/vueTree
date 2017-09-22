@@ -48,20 +48,23 @@ const defaultSettings = {
     defaultOpened: false,
     // 自定义图标，默认为false。这里值为false时下面全部不生效
     customIcon: false,
-    // 开启时图标
+    // 开启时图标（如果图片比较小的话，建议转为base64字符串直接赋值）
+    // 自动转码页面（我自己的）：http://www.jianwangsan.cn/%E5%9B%BE%E7%89%87tobase64.html
     openedIconImage: '',
     // 关闭时图标
     closedIconImage: '',
     // 没有子节点时图标
     noneIconImage: {
-      // 是否启用，不启用的话则显示为空白
-      enabled: true,
-      // 是否使用统一的自定义图标，默认为false
-      useDefaultImage: false,
+      // 是否启用，不启用的话则显示为空白，默认false
+      enabled: false,
+      // 是否使用统一的自定义图标，默认为true
+      useDefaultImage: true,
       // 统一的自定义图标的url，useDefaultImage设置为true时生效
       defaultImage: '',
       // 使用自定义图标，这里传key，会自动取这个key的值
-      customIconKey: ''
+      customIconKey: 'img',
+      // 当自定义图标的key检测不到时，会使用下面这个url作为链接
+      withOutCustomIconKey: ''
     }
   }
 }
@@ -74,7 +77,8 @@ const testData = [
         'name': '页面',
         'children': [
           {
-            'name': 'HTML'
+            'name': 'HTML（这个可以用于测试有img属性时，当没有子节点会使用img的图片）',
+            img: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAdklEQVQ4y+WTuQ3AIBAEaQKK8NN/BEUArmccgGyj43MMIZo5TqtFqbUPJxYtbg2OvS44IJQKhguwdUETSiXjXr77KhGICRjihWKm8Dw3KXP4Z5VZ/Lfw7B5kyD1cy5C7uAx5iJcht6vhRTUi4OrC0Szftvi/vAFNdbZ2Dp661QAAAABJRU5ErkJggg=='
           },
           {
             'name': 'CSS',

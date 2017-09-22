@@ -17,7 +17,42 @@
 
             <!-- 自定义图标 -->
             <template v-if="settings.openBtn.customIcon">
-
+              <!-- 有子节点时 -->
+              <template v-if="data.children">
+                <!-- 自定义打开 -->
+                <img v-if="isOpened" :src="settings.openBtn.openedIconImage" alt="" :style="btnSpanStyle"
+                     @click="hideOrShow()">
+                <!-- 自定义关闭 -->
+                <img v-if="!isOpened" :src="settings.openBtn.closedIconImage" alt=""
+                     :style="btnSpanStyle"
+                     @click="hideOrShow()">
+              </template>
+              <!-- 无子节点时 -->
+              <template v-if="!data.children">
+                <!-- 关闭自定义图标（显示空白） -->
+                <template v-if="!settings.openBtn.noneIconImage.enabled">
+                  <img class="openbtn-nochildren" :src="settings.openBtn.noneIconImage.defaultImage" alt=""
+                       :style="btnSpanStyle">
+                </template>
+                <!-- 打开自定义图标 -->
+                <template v-if="settings.openBtn.noneIconImage.enabled">
+                  <!-- 统一使用指定自定义图标 -->
+                  <img v-if="settings.openBtn.noneIconImage.useDefaultImage"
+                       class="openbtn-nochildren" :src="settings.openBtn.noneIconImage.defaultImage" alt=""
+                       :style="btnBoxStyle">
+                  <!-- 使用用户自定义图标 -->
+                  <template v-if="!settings.openBtn.noneIconImage.useDefaultImage">
+                    <!-- 有用户自定义图标时，使用用户自定义图标 -->
+                    <img v-if="data[settings.openBtn.noneIconImage.customIconKey]" class="openbtn-nochildren"
+                         :src="data[settings.openBtn.noneIconImage.customIconKey]" alt=""
+                         :style="btnBoxStyle">
+                    <!-- 没有用户自定义图标时，使用用户默认自定义图标 -->
+                    <img v-if="!data[settings.openBtn.noneIconImage.customIconKey]" class="openbtn-nochildren"
+                         :src="settings.openBtn.noneIconImage.withOutCustomIconKey" alt=""
+                         :style="btnBoxStyle">
+                  </template>
+                </template>
+              </template>
             </template>
           </div>
           <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
@@ -51,7 +86,7 @@
   }
 
   .afterBackSpace {
-    cursor: pointer;
+    cursor: default;
     position: relative;
   }
 
@@ -62,11 +97,7 @@
     height: 20px;
     line-height: 20px;
     float: left;
-  }
-
-  .open-btn-nochildren {
-    white-space: pre;
-    display: inline-block;
+    cursor: pointer;
   }
 
   .btn-box {
@@ -77,6 +108,10 @@
 
   .btn-span {
     display: inline-block;
+  }
+
+  .openbtn-nochildren {
+    cursor: default;
   }
 
   .text-box {
