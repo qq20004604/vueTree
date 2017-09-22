@@ -116,7 +116,6 @@
 <style>
   .app {
     width: 200px;
-    height: 500px;
     margin: 0 auto;
     box-sizing: border-box;
     overflow: auto;

@@ -7,7 +7,7 @@
 <template>
   <div :style="rootStyle" class="root">
     <div class="topNode" :style="topNodeStyle" lv="topNodeStyle" ref="parent">
-      <div class="content" :style="contentStyle" ref="child">
+      <div class="content" :style="contentStyle">
         <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
           <!-- 点击下拉图标组 -->
           <template v-if="settings.openBtn.enabled">
@@ -84,8 +84,8 @@
       v-on:leave="leave">
       <div v-if="isOpened" style="transform-origin: 50% 0;">
         <template v-for="(val, key) in data.children">
-          <node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
-                ref="node"></node>
+          <tree-node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
+                     ref="child"></tree-node>
         </template>
       </div>
     </transition>
@@ -103,7 +103,6 @@
     width: 100%;
     font-size: 20px;
     background-color: red;
-    cursor: pointer;
     position: relative;
     white-space: nowrap;
     overflow: hidden;
@@ -115,7 +114,6 @@
     overflow: hidden;
     height: 20px;
     line-height: 20px;
-    float: left;
     cursor: pointer;
   }
 
@@ -171,7 +169,7 @@
 
 </style>
 <script>
-  import node from './treeNode.vue'
+  import treeNode from './treeNode.vue'
   import {
     DOMAnimationWhenBeforeEnter,
     DOMAnimationWhenEnter,
@@ -254,11 +252,11 @@
       resize () {
         // 重绘时需要被触发的函数
         this.setTextSpanWidth()
-        if (!this.$refs.node || this.$refs.node.length === 0) {
+        if (!this.$refs.child || this.$refs.child.length === 0) {
           return
         }
-        this.$refs.node.forEach(node => {
-          node.resize()
+        this.$refs.child.forEach(child => {
+          child.resize()
         })
       }
     },
@@ -327,7 +325,7 @@
       }
     },
     components: {
-      node
+      treeNode
     }
   }
 </script>

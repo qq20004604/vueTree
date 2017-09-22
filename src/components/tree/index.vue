@@ -8,7 +8,7 @@
 <template>
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in data">
-      <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="node"></root-node>
+      <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"></root-node>
     </template>
   </div>
 </template>
@@ -86,11 +86,11 @@
     methods: {
       // 如果改变了根节点的宽度，或者其他需要重绘的情况，需要手动调用这个方法
       resize () {
-        if (!this.$refs.node || this.$refs.node.length === 0) {
+        if (!this.$refs.root || this.$refs.root.length === 0) {
           return
         }
-        this.$refs.node.forEach(node => {
-          node.resize()
+        this.$refs.root.forEach(root => {
+          root.resize()
         })
       },
       // 深度合并

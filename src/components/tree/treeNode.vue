@@ -7,75 +7,72 @@
 <template>
   <div>
     <div class="line" :style="style" :lv="level" ref="parent">
-      <div class="afterBackSpace" :style="nodeStyle">
-        <div class="content" ref="child">
-          <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <!-- 点击下拉图标组 -->
-            <template v-if="settings.openBtn.enabled">
-              <!-- 默认图标 -->
-              <template v-if="!settings.openBtn.customIcon">
-                <span class="btn-span" :style="dropBtnStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
-              </template>
+      <div class="content" :style="nodeStyle">
+        <div class="btn-box" :style="btnBoxStyle" ref="btnBox">
+          <!-- 点击下拉图标组 -->
+          <template v-if="settings.openBtn.enabled">
+            <!-- 默认图标 -->
+            <template v-if="!settings.openBtn.customIcon">
+              <span class="btn-span" :style="dropBtnStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
+            </template>
 
-              <!-- 自定义图标 -->
-              <template v-if="settings.openBtn.customIcon">
-                <!-- 有子节点时 -->
-                <template v-if="data.children">
-                  <!-- 自定义打开 -->
-                  <img v-if="isOpened" :src="settings.openBtn.openedIcon" alt="" :style="dropBtnStyle"
-                       @click="hideOrShow()">
-                  <!-- 自定义关闭 -->
-                  <img v-if="!isOpened" :src="settings.openBtn.closedIcon" alt=""
-                       :style="dropBtnStyle"
-                       @click="hideOrShow()">
+            <!-- 自定义图标 -->
+            <template v-if="settings.openBtn.customIcon">
+              <!-- 有子节点时 -->
+              <template v-if="data.children">
+                <!-- 自定义打开 -->
+                <img v-if="isOpened" :src="settings.openBtn.openedIcon" alt="" :style="dropBtnStyle"
+                     @click="hideOrShow()">
+                <!-- 自定义关闭 -->
+                <img v-if="!isOpened" :src="settings.openBtn.closedIcon" alt=""
+                     :style="dropBtnStyle"
+                     @click="hideOrShow()">
+              </template>
+              <!-- 无子节点时 -->
+              <template v-if="!data.children">
+                <!-- 关闭自定义图标（显示空白） -->
+                <template v-if="!settings.openBtn.noChildIcon.enabled">
+                  <img class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
+                       :style="dropBtnStyle">
                 </template>
-                <!-- 无子节点时 -->
-                <template v-if="!data.children">
-                  <!-- 关闭自定义图标（显示空白） -->
-                  <template v-if="!settings.openBtn.noChildIcon.enabled">
-                    <img class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
-                         :style="dropBtnStyle">
-                  </template>
-                  <!-- 打开自定义图标 -->
-                  <template v-if="settings.openBtn.noChildIcon.enabled">
-                    <!-- 统一使用指定自定义图标 -->
-                    <img v-if="settings.openBtn.noChildIcon.useDefaultImage"
-                         class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
+                <!-- 打开自定义图标 -->
+                <template v-if="settings.openBtn.noChildIcon.enabled">
+                  <!-- 统一使用指定自定义图标 -->
+                  <img v-if="settings.openBtn.noChildIcon.useDefaultImage"
+                       class="openbtn-nochildren" :src="settings.openBtn.noChildIcon.defaultImage" alt=""
+                       :style="btnBoxStyle">
+                  <!-- 使用用户自定义图标 -->
+                  <template v-if="!settings.openBtn.noChildIcon.useDefaultImage">
+                    <!-- 有用户自定义图标时，使用用户自定义图标 -->
+                    <img v-if="data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
+                         :src="data[settings.openBtn.noChildIcon.customIconKey]" alt=""
                          :style="btnBoxStyle">
-                    <!-- 使用用户自定义图标 -->
-                    <template v-if="!settings.openBtn.noChildIcon.useDefaultImage">
-                      <!-- 有用户自定义图标时，使用用户自定义图标 -->
-                      <img v-if="data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
-                           :src="data[settings.openBtn.noChildIcon.customIconKey]" alt=""
-                           :style="btnBoxStyle">
-                      <!-- 没有用户自定义图标时，使用用户默认自定义图标 -->
-                      <img v-if="!data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
-                           :src="settings.openBtn.noChildIcon.withOutCustomIconKey" alt=""
-                           :style="btnBoxStyle">
-                    </template>
+                    <!-- 没有用户自定义图标时，使用用户默认自定义图标 -->
+                    <img v-if="!data[settings.openBtn.noChildIcon.customIconKey]" class="openbtn-nochildren"
+                         :src="settings.openBtn.noChildIcon.withOutCustomIconKey" alt=""
+                         :style="btnBoxStyle">
                   </template>
                 </template>
               </template>
             </template>
+          </template>
 
-            <!-- 点击选中图标组 -->
-            <template v-if="settings.checkBox.enabled">
-              <img v-if="checkedStatus===2" :src="settings.checkBox.checkedIcon" alt=""
-                   :style="checkBoxStyle" @click="changeSelectStatus()">
-              <img v-if="checkedStatus===1" :src="settings.checkBox.halfCheckedIcon" alt=""
-                   :style="checkBoxStyle" @click="changeSelectStatus()">
-              <img v-if="checkedStatus===0" :src="settings.checkBox.uncheckedIcon" alt=""
-                   :style="checkBoxStyle" @click="changeSelectStatus()">
-            </template>
-          </div>
-          <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
-            <span class="text" :class="textClass"
-                  :style="textSpan" ref="textSpan">
+          <!-- 点击选中图标组 -->
+          <template v-if="settings.checkBox.enabled">
+            <img v-if="checkedStatus===2" :src="settings.checkBox.checkedIcon" alt=""
+                 :style="checkBoxStyle" @click="changeSelectStatus()">
+            <img v-if="checkedStatus===1" :src="settings.checkBox.halfCheckedIcon" alt=""
+                 :style="checkBoxStyle" @click="changeSelectStatus()">
+            <img v-if="checkedStatus===0" :src="settings.checkBox.uncheckedIcon" alt=""
+                 :style="checkBoxStyle" @click="changeSelectStatus()">
+          </template>
+        </div>
+        <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
+            <span class="text" :class="textClass" :style="textSpan" ref="textSpan">
               <!--{{level}}：-->
               {{data.name}}
             <span :class="{underline:settings.underLine}"></span></span>
           </span>
-        </div>
       </div>
     </div>
     <transition
@@ -85,7 +82,7 @@
       <div style="transform-origin: 50% 0;" v-if="isOpened">
         <template v-for="(val, k) in data.children">
           <tree-node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
-                     key="{{k}}" ref="node"></tree-node>
+                     key="{{k}}" ref="child"></tree-node>
         </template>
       </div>
     </transition>
@@ -98,18 +95,11 @@
     white-space: nowrap;
   }
 
-  .afterBackSpace {
-    cursor: default;
-    position: relative;
-  }
-
   .content {
     position: relative;
-    display: inline-block;
     overflow: hidden;
     height: 20px;
     line-height: 20px;
-    float: left;
     cursor: pointer;
   }
 
@@ -248,6 +238,26 @@
           this.checkedStatus = 0
         }
       },
+      // 当子节点选中状态变化时，触发本方法
+      whenChildNodeCheckedStatusChanged () {
+
+      },
+      // 当父节点选中状态变化时，触发本方法
+      whenParentNodeCheckStatusChanged (parentNodeCheckStatus) {
+        if (this.$refs.child) {
+        }
+      },
+      // 返回当前子节点的状态
+      getCheckboxStatus () {
+        return this.checkedStatus
+      },
+      // 设置当前子节点的状态
+      setCheckboxStatus (status) {
+        if (status < 0 || status > 2) {
+          throw new Error(`You can't set status of the checkbox to `)
+        }
+        this.checkedStatus = status
+      },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
         DOMAnimationWhenBeforeEnter(el, this.settings)
@@ -270,17 +280,17 @@
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
-        setTextSpanWidth.call(this)
+        setTextSpanWidth.call(this, true)
       },
       // 如果改变了根节点的宽度，或者其他需要重绘的情况，需要手动调用这个方法
       resize () {
         // 重绘时需要被触发的函数
         this.setTextSpanWidth()
-        if (!this.$refs.node || this.$refs.node.length === 0) {
+        if (!this.$refs.child || this.$refs.child.length === 0) {
           return
         }
-        this.$refs.node.forEach(node => {
-          node.resize()
+        this.$refs.child.forEach(child => {
+          child.resize()
         })
       }
     },

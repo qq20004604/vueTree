@@ -85,7 +85,8 @@ const testData = [
         'children': [
           {
             'name': 'HTML（这个可以用于测试有img属性时，当没有子节点会使用img的图片）',
-            img: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAdklEQVQ4y+WTuQ3AIBAEaQKK8NN/BEUArmccgGyj43MMIZo5TqtFqbUPJxYtbg2OvS44IJQKhguwdUETSiXjXr77KhGICRjihWKm8Dw3KXP4Z5VZ/Lfw7B5kyD1cy5C7uAx5iJcht6vhRTUi4OrC0Szftvi/vAFNdbZ2Dp661QAAAABJRU5ErkJggg=='
+            'img': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAdklEQVQ4y+WTuQ3AIBAEaQKK8NN/BEUArmccgGyj43MMIZo5TqtFqbUPJxYtbg2OvS44IJQKhguwdUETSiXjXr77KhGICRjihWKm8Dw3KXP4Z5VZ/Lfw7B5kyD1cy5C7uAx5iJcht6vhRTUi4OrC0Szftvi/vAFNdbZ2Dp661QAAAABJRU5ErkJggg==',
+            testSign: 'a'
           },
           {
             'name': 'CSS',
@@ -568,29 +569,32 @@ function whenMouseOver (isChildNode) {
     return
   }
   // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-  let parentDOM = this.$refs.parent
+  let parentDOMWidth = this.$refs.parent.clientWidth
   let btnBoxDOM = this.$refs.btnBox
-  if (!btnBoxDOM) {
-    btnBoxDOM = 0
+  let btnBoxDOMWidth
+  if (btnBoxDOM) {
+    btnBoxDOMWidth = btnBoxDOM.clientWidth
+  } else {
+    btnBoxDOMWidth = 0
   }
-  let textSpanDOM = this.$refs.textSpan
+  let textSpanDOMWidth = this.$refs.textSpan.clientWidth
   // offset是额外偏差值，即给动画后的文字的右边留空
   let offset = this.settings.isOverflowHidden.offset
   // 动画时间
   let anitmateTime = this.settings.isOverflowHidden.animateTime
+  // result表示实际总宽度减去父容器总宽度
   let result
   if (isChildNode) {
-    result = textSpanDOM.clientWidth +
+    result = textSpanDOMWidth +
       Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level +
       this.settings.backSpace.additionalBackSpaceForChildNode +
-      btnBoxDOM.clientWidth -
-      parentDOM.clientWidth + offset
+      btnBoxDOMWidth - parentDOMWidth + offset
   } else {
-    result = textSpanDOM.clientWidth +
+    result = textSpanDOMWidth +
       this.settings.backSpace.additionalBackSpaceForRootNode +
-      btnBoxDOM.clientWidth -
-      parentDOM.clientWidth + offset
+      btnBoxDOMWidth - parentDOMWidth + offset
   }
+  // 实际宽度比父容器总宽度大，说明超出，所以执行跑马灯动画
   if (result > 0) {
     this.isMouseover = true
     if (this.textSpan.transform) {
@@ -612,20 +616,37 @@ function whenMouseOut () {
   this.$delete(this.textSpan, 'transition')
 }
 
-function setTextSpanWidth () {
-  let parentDOM = this.$refs.parent
-  let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
-  let textSpanDOM = this.$refs.textSpan
-  let width = parentDOM.clientWidth -
-    Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level -
-    this.settings.backSpace.additionalBackSpaceForRootNode -
-    btnBoxDOM.clientWidth
-  if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
-    this.$delete(this.textSpan, 'width', width + 'px')
-    return
+function setTextSpanWidth (isChildNode) {
+  let parentDOMWidth = this.$refs.parent.clientWidth
+  let btnBoxDOM = this.$refs.btnBox
+  let btnBoxDOMWidth
+  if (btnBoxDOM) {
+    btnBoxDOMWidth = btnBoxDOM.clientWidth
+  } else {
+    btnBoxDOMWidth = 0
+  }
+  let textSpanDOMWidth = this.$refs.textSpan.clientWidth
+  // offset是额外偏差值，即给动画后的文字的右边留空
+  let offset = this.settings.isOverflowHidden.offset
+  // if (this.data.testSign) {
+  //   debugger
+  // }
+
+  // result表示实际总宽度减去父容器总宽度
+  let result
+  if (isChildNode) {
+    result = parentDOMWidth - (Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level +
+      this.settings.backSpace.additionalBackSpaceForChildNode +
+      btnBoxDOMWidth + offset)
+  } else {
+    result = parentDOMWidth - (this.settings.backSpace.additionalBackSpaceForRootNode +
+      btnBoxDOMWidth + offset)
+  }
+  if (result >= textSpanDOMWidth && this.textSpan.width) {
+    this.$delete(this.textSpan, 'width')
   }
   if (this.settings.isOverflowHidden.isEllipsis) {
-    this.$set(this.textSpan, 'width', width + 'px')
+    this.$set(this.textSpan, 'width', result + 'px')
   }
 }
 
