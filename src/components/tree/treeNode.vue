@@ -7,12 +7,20 @@
 <template>
   <div>
     <div class="line" :style="style" :lv="level" ref="parent">
-      <div class="afterBackSpace" :style="itemStyle">
+      <div class="afterBackSpace" :style="nodeStyle">
         <div class="content" ref="child">
           <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
-            <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
+            <!-- 默认图标 -->
+            <template v-if="!settings.openBtn.customIcon">
+              <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
+            </template>
+
+            <!-- 自定义图标 -->
+            <template v-if="settings.openBtn.customIcon">
+
+            </template>
           </div>
-          <span class="text-box" @mouseover="mouseHover" @mouseout="mouseOut">
+          <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
             <span class="text" :class="textClass"
                   :style="textSpan" ref="textSpan">
               <!--{{level}}：-->
@@ -28,8 +36,8 @@
       v-on:leave="leave">
       <div style="transform-origin: 50% 0;" v-if="isOpened">
         <template v-for="(val, k) in data.children">
-          <tree-item :data="val" :level="Number(level + 1)" :options="options" :settings="settings"
-                     key="{{k}}" ref="item"></tree-item>
+          <tree-node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
+                     key="{{k}}" ref="node"></tree-node>
         </template>
       </div>
     </transition>
@@ -108,10 +116,16 @@
 
 </style>
 <script>
-  import Velocity from 'velocity-animate'
+  import {
+    DOMAnimationWhenBeforeEnter,
+    DOMAnimationWhenEnter,
+    DOMAnimationWhenLeave,
+    whenMouseOver,
+    whenMouseOut
+  } from './public'
 
   export default {
-    name: 'tree-item',
+    name: 'tree-node',
     props: {
       data: {
         type: Object
@@ -119,12 +133,12 @@
       level: {
         type: Number
       },
-      options: {
+      styleOptions: {
         type: Object,
         default () {
           return {
-            topItemStyle: {},
-            itemStyle: {},
+            topNodeStyle: {},
+            nodeStyle: {},
             backSpace: 20
           }
         }
@@ -148,18 +162,17 @@
     },
     data () {
       return {
-        itemDefaultStyle: {
+        nodeDefaultStyle: {
           height: '20px',
           lineHeight: '20px'
         },
-        val: '',
         isMouseover: false,
         textSpan: {},
         isOpened: false
       }
     },
     methods: {
-      addItem () {
+      /* addNode () {
         if (this.val.length === 0) {
           return
         }
@@ -169,97 +182,39 @@
         this.data.children.push({
           name: this.val
         })
-      },
+      }, */
       // 隐藏显示子节点
       hideOrShow () {
         this.isOpened = !this.isOpened
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
-        if (this.settings.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-        }
+        DOMAnimationWhenBeforeEnter(el, this.settings)
       },
-      // 进入时主要执行函数
+      // 进入时执行函数
       enter (el, done) {
         // 这个只执行一次
-        if (this.settings.transitions.enabled) {
-          // 需要获取真实时间
-          let height = el.offsetHeight
-          Velocity(el, {scaleY: 0, height: 0}, {duration: 1})
-          Velocity(el, {scaleY: 1, height}, {
-            duration: this.settings.transitions.enterDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              // 必须额外加下面这句，否则相当于height被设置了，而不是自适应
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
+        DOMAnimationWhenEnter(el, done, this.settings)
       },
-      // 退出时主要执行函数
+      // 退出时执行函数
       leave (el, done) {
-        if (this.settings.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-          Velocity(el, {scaleY: 0, height: 0}, {
-            duration: this.settings.transitions.leaveDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
+        DOMAnimationWhenLeave(el, done, this.settings)
       },
       // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
-      mouseHover () {
-        // 如果没有隐藏超出的，直接返回
-        if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
-          return
-        }
-        // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let parentDOM = this.$refs.parent
-        let btnBoxDOM = this.$refs.btnBox
-        let textSpanDOM = this.$refs.textSpan
-        // offset是额外偏差值，即给动画后的文字的右边留空
-        let offset = this.settings.isOverflowHidden.offset
-        // 动画时间
-        let anitmateTime = this.settings.isOverflowHidden.animateTime
-        let result = textSpanDOM.clientWidth +
-          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level +
-          btnBoxDOM.clientWidth -
-          parentDOM.clientWidth + offset
-        if (result > 0) {
-          this.isMouseover = true
-          if (this.textSpan.transform) {
-            this.textSpan.transform = `translateX(-${result}px)`
-            this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
-          } else {
-            this.$set(this.textSpan, 'transform', `translateX(-${result}px)`)
-            this.$set(this.textSpan, 'transition', `transform ${anitmateTime}s 1s ease`)
-          }
-        }
+      mouseover () {
+        whenMouseOver.call(this, true)
       },
-      mouseOut () {
-        if (!this.settings.isOverflowHidden.enabled) {
-          return
-        }
-        this.isMouseover = false
-        this.$delete(this.textSpan, 'transform')
-        this.$delete(this.textSpan, 'transition')
+      mouseout () {
+        whenMouseOut.apply(this)
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
         let parentDOM = this.$refs.parent
-        let btnBoxDOM = this.$refs.btnBox
+        let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
         let textSpanDOM = this.$refs.textSpan
         let width = parentDOM.clientWidth -
-          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
+          Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level -
+          this.settings.backSpace.additionalBackSpaceForChildNode -
           btnBoxDOM.clientWidth
         if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
           this.$delete(this.textSpan, 'width', width + 'px')
@@ -273,18 +228,18 @@
       resize () {
         // 重绘时需要被触发的函数
         this.setTextSpanWidth()
-        if (!this.$refs.item || this.$refs.item.length === 0) {
+        if (!this.$refs.node || this.$refs.node.length === 0) {
           return
         }
-        this.$refs.item.forEach(item => {
-          item.resize()
+        this.$refs.node.forEach(node => {
+          node.resize()
         })
       }
     },
     computed: {
-      itemStyle () {
+      nodeStyle () {
         let style = {
-          paddingLeft: (this.settings.backSpace ? this.settings.backSpace : '20') * this.level + 'px'
+          paddingLeft: (this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level + 'px'
         }
 
         if (this.settings.isOverflowHidden) {
@@ -299,13 +254,14 @@
         return style
       },
       style () {
-        let style = Object.assign({}, this.options.itemStyle, this.itemDefaultStyle)
+        let style = Object.assign({}, this.styleOptions.nodeStyle, this.nodeDefaultStyle)
+        style['padding-left'] = this.settings.backSpace.additionalBackSpaceForChildNode + 'px'
         return style
       },
       btnBoxStyle () {
         let style = {}
-        style['height'] = this.options.itemStyle.height ? this.options.itemStyle.height : '20px'
-        style['line-height'] = this.options.itemStyle.lineHeight ? this.options.itemStyle.lineHeight : '20px'
+        style['height'] = this.styleOptions.nodeStyle.height ? this.styleOptions.nodeStyle.height : '20px'
+        style['line-height'] = this.styleOptions.nodeStyle.lineHeight ? this.styleOptions.nodeStyle.lineHeight : '20px'
         return style
       },
       textClass () {

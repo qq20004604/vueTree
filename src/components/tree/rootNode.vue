@@ -6,12 +6,12 @@
 
 <template>
   <div :style="rootStyle" class="root">
-    <div class="topItem" :style="topItemStyle" lv="topItemStyle" ref="parent">
+    <div class="topNode" :style="topNodeStyle" lv="topNodeStyle" ref="parent">
       <div class="content" :style="contentStyle" ref="child">
         <div v-if="settings.openBtn.enabled" class="btn-box" :style="btnBoxStyle" ref="btnBox">
           <span class="btn-span" :style="btnSpanStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
         </div>
-        <span class="text-box" :style="textBoxStyle" @mouseover="mouseHover()" @mouseout="mouseOut()">
+        <span class="text-box" :style="textBoxStyle" @mouseover="mouseover" @mouseout="mouseout">
               <span class="text" :class="textClass" :style="textStyle"
                     ref="textSpan">
                 <!--{{level}}：-->
@@ -28,7 +28,8 @@
       v-on:leave="leave">
       <div v-if="isOpened" style="transform-origin: 50% 0;">
         <template v-for="(val, key) in data.children">
-          <item :data="val" :level="Number(level + 1)" :options="options" :settings="settings" ref="item"></item>
+          <node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
+                ref="node"></node>
         </template>
       </div>
     </transition>
@@ -42,7 +43,7 @@
   }
 
   /* 第一层根结点（只有根节点）（不含其它子节点） */
-  .topItem {
+  .topNode {
     width: 100%;
     font-size: 20px;
     background-color: red;
@@ -108,15 +109,21 @@
 
 </style>
 <script>
-  import item from './treeItem.vue'
-  import Velocity from 'velocity-animate'
+  import node from './treeNode.vue'
+  import {
+    DOMAnimationWhenBeforeEnter,
+    DOMAnimationWhenEnter,
+    DOMAnimationWhenLeave,
+    whenMouseOver,
+    whenMouseOut
+  } from './public'
 
   export default {
     props: {
       data: {
         type: Object
       },
-      options: {
+      styleOptions: {
         type: Object,
         default () {
           return {}
@@ -146,89 +153,32 @@
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
-        if (this.settings.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-        }
+        DOMAnimationWhenBeforeEnter(el, this.settings)
       },
-      // 进入时主要执行函数
+      // 进入时执行函数
       enter (el, done) {
         // 这个只执行一次
-        if (this.settings.transitions.enabled) {
-          // 需要获取真实时间
-          let height = el.offsetHeight
-          Velocity(el, {scaleY: 0, height: 0}, {duration: 1})
-          Velocity(el, {scaleY: 1, height}, {
-            duration: this.settings.transitions.enterDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              // 必须额外加下面这句，否则相当于height被设置了，而不是自适应
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
+        DOMAnimationWhenEnter(el, done, this.settings)
       },
-      // 退出时主要执行函数
+      // 退出时执行函数
       leave (el, done) {
-        if (this.settings.transitions.enabled) {
-          el.style.pointerEvents = 'none'
-          Velocity(el, {scaleY: 0, height: 0}, {
-            duration: this.settings.transitions.leaveDuration,
-            complete () {
-              el.style.pointerEvents = 'auto'
-              el.style.height = ''
-              done()
-            }
-          })
-        } else {
-          done()
-        }
+        DOMAnimationWhenLeave(el, done, this.settings)
       },
       // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
-      mouseHover () {
-        // 如果没有隐藏超出的，直接返回
-        if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
-          return
-        }
-        // 这个可以算出来当前有没有超出范围，大于等于0则超出，小于0则未超出范围
-        let parentDOM = this.$refs.parent
-        let btnBoxDOM = this.$refs.btnBox
-        let textSpanDOM = this.$refs.textSpan
-        // offset是额外偏差值，即给动画后的文字的右边留空
-        let offset = this.settings.isOverflowHidden.offset
-        // 动画时间
-        let anitmateTime = this.settings.isOverflowHidden.animateTime
-        let result = textSpanDOM.clientWidth +
-          btnBoxDOM.clientWidth -
-          parentDOM.clientWidth + offset
-        if (result > 0) {
-          this.isMouseover = true
-          if (this.textSpan.transform) {
-            this.textSpan.transform = `translateX(-${result}px)`
-            this.textSpan.transition = `transform ${anitmateTime}s 1s ease`
-          } else {
-            this.$set(this.textSpan, 'transform', `translateX(-${result}px)`)
-            this.$set(this.textSpan, 'transition', `transform ${anitmateTime}s 1s ease`)
-          }
-        }
+      mouseover () {
+        whenMouseOver.apply(this)
       },
-      mouseOut () {
-        if (!this.settings.isOverflowHidden.enabled || this.settings.isOverflowHidden.isEllipsis) {
-          return
-        }
-        this.isMouseover = false
-        this.$delete(this.textSpan, 'transform')
-        this.$delete(this.textSpan, 'transition')
+      mouseout () {
+        whenMouseOut.apply(this)
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
         let parentDOM = this.$refs.parent
-        let btnBoxDOM = this.$refs.btnBox
+        let btnBoxDOM = this.settings.openBtn.enabled ? this.$refs.btnBox : 0
         let textSpanDOM = this.$refs.textSpan
         let width = parentDOM.clientWidth -
-          Number(this.settings.backSpace ? this.settings.backSpace : '20') * this.level -
+          Number(this.settings.backSpace.enabled ? this.settings.backSpace.value : 20) * this.level -
+          this.settings.backSpace.additionalBackSpaceForRootNode -
           btnBoxDOM.clientWidth
         if (width >= textSpanDOM.clientWidth && this.textSpan.width) {
           this.$delete(this.textSpan, 'width', width + 'px')
@@ -242,11 +192,11 @@
       resize () {
         // 重绘时需要被触发的函数
         this.setTextSpanWidth()
-        if (!this.$refs.item || this.$refs.item.length === 0) {
+        if (!this.$refs.node || this.$refs.node.length === 0) {
           return
         }
-        this.$refs.item.forEach(item => {
-          item.resize()
+        this.$refs.node.forEach(node => {
+          node.resize()
         })
       }
     },
@@ -260,45 +210,45 @@
         return style
       },
       rootStyle () {
-        if (this.options.listStyle) {
-          return Object.assign(this.options.rootStyle, this.defaultRootStyle)
+        if (this.styleOptions.listStyle) {
+          return Object.assign(this.styleOptions.rootStyle, this.defaultRootStyle)
         } else {
           return this.rootStyle
         }
       },
-      topItemStyle () {
+      topNodeStyle () {
         let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
-
-        if (this.options.topItemStyle) {
-          return Object.assign({}, this.options.topItemStyle, style)
+        style['height'] = this.styleOptions.topNodeStyle.height ? this.styleOptions.topNodeStyle.height : '40px'
+        style['line-height'] = this.styleOptions.topNodeStyle.lineHeight ? this.styleOptions.topNodeStyle.lineHeight : '40px'
+        style['padding-left'] = this.settings.backSpace.additionalBackSpaceForRootNode + 'px'
+        if (this.styleOptions.topNodeStyle) {
+          return Object.assign({}, this.styleOptions.topNodeStyle, style)
         } else {
           return style
         }
       },
       contentStyle () {
         let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        style['height'] = this.styleOptions.topNodeStyle.height ? this.styleOptions.topNodeStyle.height : '40px'
+        style['line-height'] = this.styleOptions.topNodeStyle.lineHeight ? this.styleOptions.topNodeStyle.lineHeight : '40px'
         return style
       },
       btnBoxStyle () {
         let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        style['height'] = this.styleOptions.topNodeStyle.height ? this.styleOptions.topNodeStyle.height : '40px'
+        style['line-height'] = this.styleOptions.topNodeStyle.lineHeight ? this.styleOptions.topNodeStyle.lineHeight : '40px'
         return style
       },
       textBoxStyle () {
         let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        style['height'] = this.styleOptions.topNodeStyle.height ? this.styleOptions.topNodeStyle.height : '40px'
+        style['line-height'] = this.styleOptions.topNodeStyle.lineHeight ? this.styleOptions.topNodeStyle.lineHeight : '40px'
         return style
       },
       textStyle () {
         let style = {}
-        style['height'] = this.options.topItemStyle.height ? this.options.topItemStyle.height : '40px'
-        style['line-height'] = this.options.topItemStyle.lineHeight ? this.options.topItemStyle.lineHeight : '40px'
+        style['height'] = this.styleOptions.topNodeStyle.height ? this.styleOptions.topNodeStyle.height : '40px'
+        style['line-height'] = this.styleOptions.topNodeStyle.lineHeight ? this.styleOptions.topNodeStyle.lineHeight : '40px'
         return Object.assign({}, this.textSpan, style)
       },
       textClass () {
@@ -312,7 +262,7 @@
       }
     },
     components: {
-      item
+      node
     }
   }
 </script>
