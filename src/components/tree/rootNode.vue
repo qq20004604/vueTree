@@ -315,6 +315,25 @@
         this.$refs.child.forEach(child => {
           child.resize()
         })
+      },
+      // 获取选中的节点
+      getSelectedNode (notOnlyLeaf) {
+        // 参数为true时，包括非叶子节点
+        // 否则只返回叶子节点
+        // 返回是数组形式
+        let result = []
+        if (this.checkedStatus !== 0) {
+          let data = this.data
+          result.push(data)
+        }
+        if (!this.$refs.child || this.$refs.child.length === 0) {
+          return result
+        }
+        this.$refs.child.forEach(child => {
+          let arr = child.getSelectedNode(notOnlyLeaf)
+          result = result.concat(arr)
+        })
+        return result
       }
     },
     computed: {

@@ -6,6 +6,7 @@
     <a href="https://github.com/qq20004604/vueTree" style="text-decoration: underline;">点击查看Github链接</a>
     <button @click="repaint">改变组件父容器宽度并触发重绘</button>
     <button @click="changeOverflow">改变超出部分的处理方式（三个点或者是走马灯）</button>
+    <button @click="getSelected">获取选中的元素</button>
   </div>
 </template>
 <script>
@@ -100,6 +101,9 @@
         this.$nextTick(() => {
           this.$refs.tree.resize()
         })
+      },
+      getSelected () {
+        console.log(this.$ref.tree.getSelected())
       }
     },
     computed: {
