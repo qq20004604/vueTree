@@ -197,6 +197,17 @@
         }
       }
     },
+    created () {
+      // 将check存为私有变量，如果不存在这个属性，则设置其为未选中
+      if (!this.data._check) {
+        this.data._check = 0
+      }
+      // 将当前变量的选中状态，设置给_check
+      this.checkedStatus = this.data._check
+      this.$watch('checkedStatus', function (newValue, oldValue) {
+        this.data._check = newValue
+      })
+    },
     mounted () {
       this.setTextSpanWidth()
     },
@@ -206,7 +217,7 @@
         isMouseover: false, // 当前鼠标是否移动上去了
         textSpan: {},
         isOpened: true,
-        checkedStatus: 0  // 0未选, 1半选, 2全选
+        checkedStatus: 0
       }
     },
     methods: {
@@ -221,7 +232,8 @@
         // 选中->未选中
         this.checkedStatus = this.checkedStatus === 2 ? 0 : 2
 
-        this.$parent.whenChildNodeCheckedStatusChanged()
+        // 根节点无需触发该方法
+        // this.$parent.whenChildNodeCheckedStatusChanged()
         if (this.$refs.child) {
           this.$refs.child.forEach(child => {
             child.whenParentNodeCheckStatusChanged(this.checkedStatus)

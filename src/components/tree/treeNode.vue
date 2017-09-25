@@ -196,9 +196,21 @@
       } else {
         this.isOpened = false
       }
-      console.log(this.checkedStatus)
-      let parentCheckStatus = this.$parent.getCheckboxStatus()
-      this.checkedStatus = parentCheckStatus === 1 ? 0 : parentCheckStatus
+
+      // 将check存为私有变量，如果不存在这个属性，则设置其为未选中
+      if (!this.data._check) {
+        if (this.$parent.data._check !== 2) {
+          this.data._check = 0
+        } else {
+          this.data._check = 2
+        }
+      }
+      // 将当前变量的选中状态，设置给_check
+      this.checkedStatus = this.data._check
+
+      this.$watch('checkedStatus', function (newValue, oldValue) {
+        this.data._check = newValue
+      })
     },
     mounted () {
       this.setTextSpanWidth()
@@ -212,7 +224,7 @@
         isMouseover: false,
         textSpan: {},
         isOpened: false,
-        checkedStatus: 0  // 0未选, 1半选, 2全选
+        checkedStatus: 0
       }
     },
     methods: {
@@ -236,8 +248,8 @@
         // 未选中->选中
         // 半选->选中
         // 选中->未选中
+//        debugger
         this.checkedStatus = this.checkedStatus === 2 ? 0 : 2
-
         this.$parent.whenChildNodeCheckedStatusChanged()
         if (this.$refs.child) {
           this.$refs.child.forEach(child => {
@@ -255,6 +267,7 @@
         this.$refs.child.forEach(child => {
           count[child.getCheckboxStatus()]++
         })
+        let oldCheckedStatus = this.checkedStatus
         // 如果半选的数目大于0，那么就是即有选中也有未选中，当前节点设为半选
         // 剩余情况为只有选中和未选中
         if (count[1] > 0) {
@@ -267,6 +280,9 @@
           this.checkedStatus = 2
         } else {
           this.checkedStatus = 0
+        }
+        if (this.checkedStatus !== oldCheckedStatus) {
+          this.$parent.whenChildNodeCheckedStatusChanged()
         }
       },
       // 当父节点选中状态变化时，触发本方法
