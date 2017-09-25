@@ -197,12 +197,16 @@
         this.isOpened = false
       }
 
-      // 将check存为私有变量，如果不存在这个属性，则设置其为未选中
       if (!this.data._check) {
         if (this.$parent.data._check !== 2) {
           this.data._check = 0
         } else {
           this.data._check = 2
+        }
+      } else {
+        // 如果父元素是选中或未选中，子元素和其保持一致
+        if (this.$parent.data._check !== 1) {
+          this.data._check = this.$parent.data._check
         }
       }
       // 将当前变量的选中状态，设置给_check

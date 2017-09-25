@@ -198,7 +198,6 @@
       }
     },
     created () {
-      // 将check存为私有变量，如果不存在这个属性，则设置其为未选中
       if (!this.data._check) {
         this.data._check = 0
       }
