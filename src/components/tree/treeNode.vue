@@ -163,7 +163,7 @@
     whenMouseOut,
     setTextSpanWidth,
     getNodeData,
-    getSelectNodeData
+    getSelectedNodeData
   } from './public'
 
   export default {
@@ -355,51 +355,7 @@
       },
       // 获取选中的节点
       getSelectedNode () {
-        // 返回是数组形式
-        let result = []
-        // 只有选中的时候，才会添加进去（半选状态不会）
-        // 添加进去当前节点的数据
-        let data
-        if (this.checkedStatus === 2) {
-          data = this.getData()
-          result.push(data)
-        } else if (this.checkedStatus === 0) {
-          // 如果当前节点未选中，直接返回空数组
-          return result
-        }
-        // 剩下的情况，是当前节点是【半选】或者【选中】的情况
-        // 需要特别注意的是【半选】，半选的时候需要注意子节点的checked属性
-        // 假如checked属性不存在，应视为0
-
-        // 如果没有子组件，并且没有children属性，直接返回result
-        if ((!this.$refs.child || this.$refs.child.length === 0) && !this.data.children) {
-          return result
-        }
-        // 此时说明组件至少有children属性，那么要要this.data.children的数据添加到children属性中
-        // 并且children不能影响this.data.children的状态（但元素是按引用传递的）
-        data.children = []
-        for (let i of this.data.children) {
-          // 注意，由于只有在生成节点的时候，才会添加/纠正当前节点以及子节点的checked属性
-          // 因此假如初始数据是错误的，那么这里返回某个子节点的checked属性就有可能是错误的
-          // 为了性能，所以并没有递归去纠正所有子节点的数据
-          // 因此【请勿完全相信children属性里的checked的值的正确性】，除非他曾经被渲染为节点
-          data.children.push(i)
-        }
-
-        // 如果有子组件
-        if (this.$refs.child && this.$refs.child.length > 0) {
-          // 递归将子节点内容添加进去
-          this.$refs.child.forEach(child => {
-            let arr = child.getSelectedNode()
-            result = result.concat(arr)
-          })
-        } else {
-          // 剩下情况是没有子组件但有children属性
-          // 调用本方法时，父元素必定是1或2（0的时候之前已经退出了）
-          let arr = getSelectNodeData(this.data.children, this.checkedStatus, this.level)
-          result.concat(arr)
-        }
-        return result
+        return getSelectedNodeData.call(this)
       },
       // 获取当前节点的数据
       getData () {
