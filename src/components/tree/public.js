@@ -79,6 +79,7 @@ const defaultSettings = {
 const testData = [
   {
     'name': '前端工程师1231231',
+    'checked': '2',
     'children': [
       {
         'name': '页面',
@@ -493,6 +494,17 @@ const testData = [
   }
 ]
 
+// 普通复制，只复制当前层，并且不会复制参数2里的key
+function copy (from, ignoreArray) {
+  let data = {}
+  Object.keys(from).forEach(key => {
+    if (ignoreArray.indexOf(key) === -1) {
+      data[key] = from[key]
+    }
+  })
+  return data
+}
+
 // 深度复制
 function deepCopy (from, base) {
   let temp
@@ -650,6 +662,52 @@ function setTextSpanWidth (isChildNode) {
   }
 }
 
+// 当前组件未展开，但处于选中状态时，递归获取所有子元素，并以数组形式返回
+// 参数一是children属性
+// 参数二表示父节点是选中状态（1或者2）
+// 参数三是当前节点的level（直接传this.level即可）
+function getSelectNodeData (children, parentCheckStatus, level) {
+  // 如果不是数组，直接返回空数组
+  if (Object.prototype.toString.call(children) !== '[object Array]') {
+    return []
+  }
+  // 返回数组
+  let result = []
+  children.forEach(child => {
+    // 如果子节点是不是半选或选中，跳过
+    if (child.checked !== 1 || child.checked !== 2) {
+      return
+    } else if (child.checked === 2) {
+      // 如果是选中，则添加进去
+      let data = getNodeData(child, false, level)
+      result.push(data)
+    }
+    let arr = getSelectNodeData(child.children, parentCheckStatus, level + 1)
+    result.concat(arr)
+  })
+  return result
+}
+
+// 输入节点，获取数据
+// 参数一是数据来源
+// 参数二表示调用本方法的是组件或者非组件
+// 参数三、四，仅当参数二为false时生效，
+// 参数三表示父节点层级
+// 参数四表示父节点是否选中（一般是选中才进入，为后期丰富功能预设本参数）
+function getNodeData (from, byComponent, parentLevel, isParentChecked = true) {
+  let data = copy(from, ['children'])
+  if (byComponent) {
+    data.isOpened = this.isOpened
+    data.level = this.level
+  } else {
+    // 父节点如果是2
+    data.checked = isParentChecked ? 2 : 0
+    data.level = parentLevel + 1
+    data.isOpened = false
+  }
+  return data
+}
+
 export {
   deepCopy,
   defaultSettings,
@@ -659,5 +717,8 @@ export {
   DOMAnimationWhenLeave,
   whenMouseOver,
   whenMouseOut,
-  setTextSpanWidth
+  setTextSpanWidth,
+  copy,
+  getSelectNodeData,
+  getNodeData
 }

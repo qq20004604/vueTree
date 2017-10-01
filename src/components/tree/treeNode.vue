@@ -161,7 +161,9 @@
     DOMAnimationWhenLeave,
     whenMouseOver,
     whenMouseOut,
-    setTextSpanWidth
+    setTextSpanWidth,
+    getNodeData,
+    getSelectNodeData
   } from './public'
 
   export default {
@@ -197,23 +199,24 @@
         this.isOpened = false
       }
 
-      if (!this.data._check) {
-        if (this.$parent.data._check !== 2) {
-          this.data._check = 0
+      if (!this.data.checked) {
+        if (this.$parent.data.checked !== 2) {
+          this.data.checked = 0
         } else {
-          this.data._check = 2
+          this.data.checked = 2
         }
       } else {
         // 如果父元素是选中或未选中，子元素和其保持一致
-        if (this.$parent.data._check !== 1) {
-          this.data._check = this.$parent.data._check
+        if (this.$parent.data.checked !== 1) {
+          this.data.checked = this.$parent.data.checked
         }
       }
-      // 将当前变量的选中状态，设置给_check
-      this.checkedStatus = this.data._check
+      // 将当前变量的选中状态，设置给checked
+      this.data.checked = Number(this.data.checked)
+      this.checkedStatus = this.data.checked
 
       this.$watch('checkedStatus', function (newValue, oldValue) {
-        this.data._check = newValue
+        this.data.checked = newValue
       })
     },
     mounted () {
@@ -297,10 +300,18 @@
         }
         // 设置当前子节点状态为父节点状态，并向下递归传递
         this.checkedStatus = parentNodeIsChecked
+        // 如果有子节点，那么利用子节点自身的方法执行
         if (this.$refs.child) {
           this.$refs.child.forEach(child => {
             child.whenParentNodeCheckStatusChanged(parentNodeIsChecked)
           })
+        }
+        // 然而，假如有children属性，但是由于当前节点未展开，无法触发子组件对应的方法
+        // 那么，需要处理children属性的checked属性（仅需要处理当前层级即可）
+        if (!this.isOpened && this.data.children) {
+          for (let i of this.data.children) {
+            i.checked = parentNodeIsChecked
+          }
         }
       },
       // 返回当前子节点的状态
@@ -343,23 +354,56 @@
         })
       },
       // 获取选中的节点
-      getSelectedNode (notOnlyLeaf) {
-        // 参数为true时，包括非叶子节点
-        // 否则只返回叶子节点
+      getSelectedNode () {
         // 返回是数组形式
         let result = []
-        if (this.checkedStatus !== 0) {
-          let data = this.data
+        // 只有选中的时候，才会添加进去（半选状态不会）
+        // 添加进去当前节点的数据
+        let data
+        if (this.checkedStatus === 2) {
+          data = this.getData()
           result.push(data)
-        }
-        if (!this.$refs.child || this.$refs.child.length === 0) {
+        } else if (this.checkedStatus === 0) {
+          // 如果当前节点未选中，直接返回空数组
           return result
         }
-        this.$refs.child.forEach(child => {
-          let arr = child.getSelectedNode(notOnlyLeaf)
-          result = result.concat(arr)
-        })
+        // 剩下的情况，是当前节点是【半选】或者【选中】的情况
+        // 需要特别注意的是【半选】，半选的时候需要注意子节点的checked属性
+        // 假如checked属性不存在，应视为0
+
+        // 如果没有子组件，并且没有children属性，直接返回result
+        if ((!this.$refs.child || this.$refs.child.length === 0) && !this.data.children) {
+          return result
+        }
+        // 此时说明组件至少有children属性，那么要要this.data.children的数据添加到children属性中
+        // 并且children不能影响this.data.children的状态（但元素是按引用传递的）
+        data.children = []
+        for (let i of this.data.children) {
+          // 注意，由于只有在生成节点的时候，才会添加/纠正当前节点以及子节点的checked属性
+          // 因此假如初始数据是错误的，那么这里返回某个子节点的checked属性就有可能是错误的
+          // 为了性能，所以并没有递归去纠正所有子节点的数据
+          // 因此【请勿完全相信children属性里的checked的值的正确性】，除非他曾经被渲染为节点
+          data.children.push(i)
+        }
+
+        // 如果有子组件
+        if (this.$refs.child && this.$refs.child.length > 0) {
+          // 递归将子节点内容添加进去
+          this.$refs.child.forEach(child => {
+            let arr = child.getSelectedNode()
+            result = result.concat(arr)
+          })
+        } else {
+          // 剩下情况是没有子组件但有children属性
+          // 调用本方法时，父元素必定是1或2（0的时候之前已经退出了）
+          let arr = getSelectNodeData(this.data.children, this.checkedStatus, this.level)
+          result.concat(arr)
+        }
         return result
+      },
+      // 获取当前节点的数据
+      getData () {
+        return getNodeData.call(this, this.data, true)
       }
     },
     computed: {

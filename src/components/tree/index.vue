@@ -111,16 +111,14 @@
         return result
       },
       // 获取选中的节点
-      getSelectedNode (notOnlyLeaf) {
-        // 参数为true时，包括非叶子节点
-        // 否则只返回叶子节点
+      getSelectedNode () {
         // 返回是数组形式
         let result = []
         if (!this.$refs.root || this.$refs.root.length === 0) {
           return result
         }
         this.$refs.root.forEach(root => {
-          let arr = root.getSelectedNode(notOnlyLeaf)
+          let arr = root.getSelectedNode()
           result = result.concat(arr)
         })
         return result
