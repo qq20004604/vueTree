@@ -103,7 +103,7 @@
         })
       },
       getSelected () {
-        console.log(this.$ref.tree.getSelected())
+        console.log(this.$refs.tree.getSelectedNode())
       }
     },
     computed: {
