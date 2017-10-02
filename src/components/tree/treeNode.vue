@@ -85,8 +85,13 @@
       v-on:leave="leave">
       <div style="transform-origin: 50% 0;" v-if="isOpened">
         <template v-for="(val, k) in data.children">
-          <tree-node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
-                     :events="events" key="{{k}}" ref="child"></tree-node>
+          <tree-node :data="val"
+                     :level="Number(level + 1)"
+                     :styleOptions="styleOptions"
+                     :settings="settings"
+                     :events="events"
+                     :asyncLoad="asyncLoad"
+                     key="{{k}}" ref="child"></tree-node>
         </template>
       </div>
     </transition>
@@ -200,6 +205,12 @@
         default () {
           return {}
         }
+      },
+      asyncLoad: {
+        type: Object,
+        default () {
+          return {}
+        }
       }
     },
     created () {
@@ -260,6 +271,9 @@
       hideOrShow () {
         if (this.data.children) {
           this.isOpened = !this.isOpened
+        }
+        if (this.isOpened && this.asyncLoad.beforeLoad(this.getData(), this.getChildren(), this)) {
+          this.asyncLoadData()
         }
       },
       // 选中或者取消选中，会影响子节点和父节点
@@ -400,8 +414,8 @@
       // 获取children
       getChildren () {
         let arr = []
-        if (this.children) {
-          this.children.forEach(item => {
+        if (this.data.children) {
+          this.data.children.forEach(item => {
             arr.push(item)
           })
           return arr
@@ -417,6 +431,20 @@
         }
         // 如果打开了，那么返回child
         return this.$refs.child ? this.$refs.child : []
+      },
+      // 异步加载数据到子组件
+      asyncLoadData () {
+        new Promise((resolve, reject) => {
+          this.asyncLoad.load(this, resolve, reject)
+        }).then(data => {
+          // 如果不是数组，那么先设置为数组
+          if (Object.prototype.toString.call(this.data.children) !== '[object Array]') {
+            this.data.children = []
+          }
+          if (this.asyncLoad.insert(data, this.data.children)) {
+            this.isOpened = !this.isOpened
+          }
+        }).catch(this.asyncLoad.errorCatch)
       }
     },
     computed: {

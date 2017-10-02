@@ -97,6 +97,36 @@ const treeNodeEvents = {
   }
 }
 
+// 异步加载函数
+const asyncLoad = {
+  // 当展开子节点时，会执行本函数
+  // 当返回值为true时，会去执行load，否则不会执行
+  // 参数一是当前组件的数据
+  // 参数二是data目前已有的children的元素
+  // 参数三是当前组件
+  beforeLoad (data, children, VueElement) {
+
+  },
+  // 异步加载，ajax应放入load里面
+  // 参数一是当前组件
+  // 参数二是成功（会进入insert）
+  // 参数三是失败（会进入catch）
+  load (VueElement, resolve, reject) {
+    resolve()
+  },
+  // 插入函数，这里是成功加载到数据时应执行的函数，
+  // 上面resolve执行后，传的参数会被作为insert的第一个参数
+  // 当前组件的children是第二个参数，应当push到这里面去
+  // 这里【return true】的话，会【放弃】在加载完成后【展开】已加载好的子节点
+  insert (data, children) {
+
+  },
+  // 错误捕获函数，报错时（load执行reject），会执行这个
+  errorCatch (errorMsg) {
+    // console.error(err)
+  }
+}
+
 // 测试数据
 const testData = [
   {
@@ -109,7 +139,8 @@ const testData = [
           {
             'name': 'HTML（这个可以用于测试有img属性时，当没有子节点会使用img的图片）',
             'img': 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAdklEQVQ4y+WTuQ3AIBAEaQKK8NN/BEUArmccgGyj43MMIZo5TqtFqbUPJxYtbg2OvS44IJQKhguwdUETSiXjXr77KhGICRjihWKm8Dw3KXP4Z5VZ/Lfw7B5kyD1cy5C7uAx5iJcht6vhRTUi4OrC0Szftvi/vAFNdbZ2Dp661QAAAABJRU5ErkJggg==',
-            testSign: 'a'
+            testSign: 'a',
+            children: []
           },
           {
             'name': 'CSS',
@@ -519,5 +550,6 @@ const testData = [
 export {
   defaultSettings,
   testData,
+  asyncLoad,
   treeNodeEvents
 }

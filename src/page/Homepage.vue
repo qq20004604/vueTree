@@ -1,7 +1,13 @@
 <template>
   <div>
     <div class="app" :style="boxStyle">
-      <tree :styleOptions="styleOptions" :settings="settings" ref="tree" :data="data" :userEvents="events"></tree>
+      <tree
+        :styleOptions="styleOptions"
+        :settings="settings"
+        ref="tree"
+        :data="data"
+        :userEvents="events"
+        :async="asyncLoad"></tree>
     </div>
     <a href="https://github.com/qq20004604/vueTree" style="text-decoration: underline;">点击查看Github链接</a>
     <button @click="repaint">改变组件父容器宽度并触发重绘</button>
@@ -107,6 +113,42 @@
 //            console.log('mouseout')
 //            console.log(data, vueElement)
 //          }
+        },
+        // 测试异步加载，可以通过第一个根节点-》页面-》HTML 来进行
+        asyncLoad: {
+          // 当展开子节点时，会执行本函数
+          // 当返回值为true时，会去执行load，否则不会执行
+          // 参数一是当前组件的数据
+          // 参数二是data目前已有的children的元素
+          // 参数三是当前组件
+          beforeLoad (data, children, VueElement) {
+            if (children.length < 2) {
+              return true
+            }
+          },
+          // 异步加载，ajax应放入load里面
+          // 参数一是当前组件
+          // 参数二是成功（会进入insert）
+          // 参数三是失败（会进入catch）
+          load (VueElement, resolve, reject) {
+            let data = {
+              name: 'test'
+            }
+            setTimeout(() => {
+              resolve(data)
+            }, 1000)
+          },
+          // 插入函数，这里是成功加载到数据时应执行的函数，
+          // 上面resolve执行后，传的参数会被作为insert的第一个参数
+          // 当前组件的children是第二个参数，应当push到这里面去
+          // 这里【return true】的话，会【放弃】在加载完成后【展开】已加载好的子节点
+          insert (data, children) {
+            children.push(data)
+          },
+          // 错误捕获函数，报错时（load执行reject），会执行这个
+          errorCatch (errorMsg) {
+            // console.error(err)
+          }
         }
       }
     },

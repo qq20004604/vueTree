@@ -10,7 +10,7 @@
     <template v-for="(v, k) in Data">
       <keep-alive>
         <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"
-                   :events="events"></root-node>
+                   :events="events" :asyncLoad="asyncLoad"></root-node>
       </keep-alive>
     </template>
   </div>
@@ -29,7 +29,11 @@
 </style>
 <script>
   import rootNode from './rootNode.vue'
-  import {defaultSettings, treeNodeEvents} from './config.js'
+  import {
+    defaultSettings,
+    treeNodeEvents,
+    asyncLoad as load
+  } from './config.js'
   import {deepCopy} from './public'
 
   export default {
@@ -62,6 +66,12 @@
         }
       },
       userEvents: {
+        type: Object,
+        default () {
+          return {}
+        }
+      },
+      async: {
         type: Object,
         default () {
           return {}
@@ -103,6 +113,9 @@
       },
       events () {
         return Object.assign({}, treeNodeEvents, this.userEvents)
+      },
+      asyncLoad () {
+        return Object.assign({}, load, this.async)
       }
     },
     methods: {
