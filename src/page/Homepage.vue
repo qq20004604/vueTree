@@ -88,22 +88,22 @@
         data: testData,
         events: {
 //          // 单击事件
-//          click (data, vueElement) {
+//          click (data, vueElement, children, parentElement) {
 //            console.log('click')
-//            console.log(data, vueElement)
+//            console.log(...arguments)
 //          },
 //          // 双击标签，return true会阻止标签双击的时候关闭/打开子节点
-//          dblclick (data, vueElement) {
+//          dblclick (data, vueElement, children, parentElement) {
 //            console.log('dblclick')
 //            console.log(data, vueElement)
 //          },
 //          // 鼠标移动上去
-//          mouseover (data, vueElement) {
+//          mouseover (data, vueElement, children, parentElement) {
 //            console.log('mouseover')
 //            console.log(data, vueElement)
 //          },
 //          // 鼠标离开
-//          mouseout (data, vueElement) {
+//          mouseout (data, vueElement, children, parentElement) {
 //            console.log('mouseout')
 //            console.log(data, vueElement)
 //          }

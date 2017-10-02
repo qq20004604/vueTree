@@ -80,19 +80,19 @@ const treeNodeEvents = {
   // 参数一是当前标签的数据
   // 参数二是当前组件
   // 单机标签事件
-  click (data, vueElement) {
+  click (data, vueElement, children, parentElement) {
 
   },
   // 双击标签，return true会阻止标签双击的时候关闭/打开子节点
-  dblclick (data, vueElement) {
+  dblclick (data, vueElement, children, parentElement) {
 
   },
   // 鼠标移动上去
-  mouseover (data, vueElement) {
+  mouseover (data, vueElement, children, parentElement) {
 
   },
   // 鼠标离开
-  mouseout (data, vueElement) {
+  mouseout (data, vueElement, children, parentElement) {
 
   }
 }

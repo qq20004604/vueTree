@@ -67,7 +67,7 @@
                  :style="checkBoxStyle" @click="changeSelectStatus()">
           </template>
         </div>
-        <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
+        <span class="text-box" @mouseover="mouseoverTransition" @mouseout="mouseoutTransition">
             <span class="text" :class="textClass" :style="textSpan" ref="textSpan"
                   @click="clickEvent"
                   @dblclick="debouleClickEvent"
@@ -160,9 +160,9 @@
 </style>
 <script>
   import {
-    DOMAnimationWhenBeforeEnter,
-    DOMAnimationWhenEnter,
-    DOMAnimationWhenLeave,
+    DOMTransitionWhenBeforeEnter,
+    DOMTransitionWhenEnter,
+    DOMTransitionWhenLeave,
     whenMouseOver,
     whenMouseOut,
     setTextSpanWidth,
@@ -332,23 +332,39 @@
       },
       // 过渡动画，过渡过程中点击无效
       beforeEnter (el) {
-        DOMAnimationWhenBeforeEnter(el, this.settings)
+        DOMTransitionWhenBeforeEnter(el, this.settings)
       },
       // 进入时执行函数
       enter (el, done) {
         // 这个只执行一次
-        DOMAnimationWhenEnter(el, done, this.settings)
+        DOMTransitionWhenEnter(el, done, this.settings)
       },
       // 退出时执行函数
       leave (el, done) {
-        DOMAnimationWhenLeave(el, done, this.settings)
+        DOMTransitionWhenLeave(el, done, this.settings)
       },
       // 鼠标移动到结点上时，假如结点显示内容超出范围，则自动左移一段距离
-      mouseover () {
+      mouseoverTransition () {
         whenMouseOver.call(this, true)
       },
-      mouseout () {
+      mouseoutTransition () {
         whenMouseOut.apply(this)
+      },
+      // 单击事件
+      clickEvent () {
+        this.events.click(this.getData(), this, this.data.children, this.$parent)
+      },
+      // 双击事件
+      debouleClickEvent () {
+        return this.events.dblclick(this.getData(), this, this.data.children, this.$parent) ? undefined : this.hideOrShow()
+      },
+      // 鼠标移动上去后的事件
+      mouseoverEvent () {
+        this.events.mouseover(this.getData(), this, this.data.children, this.$parent)
+      },
+      // 鼠标移动走的事件
+      mouseoutEvent () {
+        this.events.mouseout(this.getData(), this, this.data.children, this.$parent)
       },
       // 设置文本显示区域的宽度
       setTextSpanWidth () {
@@ -373,21 +389,34 @@
       getData () {
         return getNodeData.call(this, this.data, true)
       },
-      // 单击事件
-      clickEvent () {
-        this.events.click(this.getData(), this)
+      // 获取根节点组件
+      getRootElement () {
+        let node = this
+        while (node.level !== 0) {
+          node = node.$parent
+        }
+        return node
       },
-      // 双击事件
-      debouleClickEvent () {
-        return this.events.dblclick(this.getData(), this) ? undefined : this.hideOrShow()
+      // 获取children
+      getChildren () {
+        let arr = []
+        if (this.children) {
+          this.children.forEach(item => {
+            arr.push(item)
+          })
+          return arr
+        }
+        return undefined
       },
-      // 鼠标移动上去后的事件
-      mouseoverEvent () {
-        this.events.mouseover(this.getData(), this)
-      },
-      // 鼠标移动走的事件
-      mouseoutEvent () {
-        this.events.mouseout(this.getData(), this)
+      // 获取子组件，有children属性不一定有子组件（因为可能未渲染）
+      // 三种返回情况，无返回undefined，有子组件返回子组件，其他情况返回空数组
+      getChildrenElement () {
+        // 没有children返回undefined
+        if (!this.children) {
+          return undefined
+        }
+        // 如果打开了，那么返回child
+        return this.$refs.child ? this.$refs.child : []
       }
     },
     computed: {

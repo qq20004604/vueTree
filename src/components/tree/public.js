@@ -40,14 +40,14 @@ function deepCopy (from, base) {
 }
 
 // 组件进入动画（进入之前的第一帧）
-function DOMAnimationWhenBeforeEnter (el, settings) {
+function DOMTransitionWhenBeforeEnter (el, settings) {
   if (settings.transitions.enabled) {
     el.style.pointerEvents = 'none'
   }
 }
 
 // 组件进入时执行的动画（只执行一次），done表示进入完成
-function DOMAnimationWhenEnter (el, done, settings) {
+function DOMTransitionWhenEnter (el, done, settings) {
   if (settings.transitions.enabled) {
     // 需要获取真实高度
     let height = el.offsetHeight
@@ -68,7 +68,7 @@ function DOMAnimationWhenEnter (el, done, settings) {
 }
 
 // 组件离开时执行的动画（只执行一次），done表示离开完成
-function DOMAnimationWhenLeave (el, done, settings) {
+function DOMTransitionWhenLeave (el, done, settings) {
   if (settings.transitions.enabled) {
     el.style.pointerEvents = 'none'
     Velocity(el, {scaleY: 0, height: 0}, {
@@ -271,9 +271,9 @@ function getSelectedNodeData () {
 
 export {
   deepCopy,
-  DOMAnimationWhenBeforeEnter,
-  DOMAnimationWhenEnter,
-  DOMAnimationWhenLeave,
+  DOMTransitionWhenBeforeEnter,
+  DOMTransitionWhenEnter,
+  DOMTransitionWhenLeave,
   whenMouseOver,
   whenMouseOut,
   setTextSpanWidth,
