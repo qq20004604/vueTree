@@ -7,7 +7,10 @@ run
 
 附赠vue脚手架一套
 
-在线版DEMO：[http://www.jianwangsan.cn/vue-tree/index.html#/](http://www.jianwangsan.cn/vue-tree/index.html#/)
+在线版DEMO：(update by 2017/10/02)[http://www.jianwangsan.cn/vue-tree/index.html#/](http://www.jianwangsan.cn/vue-tree/index.html#/)
+
+点击直达组件所在链接：[Tree](https://github.com/qq20004604/vueTree/tree/master/src/components/tree)
+
 
 已完成功能列表：
 
@@ -24,7 +27,7 @@ run
 11. 没有子节点时，是否有图标和图标的样式；
 12. 增加了双击展开子节点功能；
 13. 添加了包括【单击】、【双击】、【mouseover】、【mouseout】等多种鼠标事件
-14. 异步加载子节点
+14. 异步加载子节点(done 2017/10/02)
 
 待完成功能列表：
 
