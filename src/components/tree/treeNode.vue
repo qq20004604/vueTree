@@ -13,7 +13,7 @@
           <template v-if="settings.openBtn.enabled">
             <!-- 默认图标 -->
             <template v-if="!settings.openBtn.customIcon">
-              <span class="btn-span" :style="dropBtnStyle" @click="hideOrShow()">{{isOpened ? '－' : '＋'}}</span>
+              <span class="btn-span" :style="dropBtnStyle" @click="hideOrShow">{{isOpened ? '－' : '＋'}}</span>
             </template>
 
             <!-- 自定义图标 -->
@@ -68,7 +68,7 @@
           </template>
         </div>
         <span class="text-box" @mouseover="mouseover" @mouseout="mouseout">
-            <span class="text" :class="textClass" :style="textSpan" ref="textSpan">
+            <span class="text" :class="textClass" :style="textSpan" ref="textSpan" @dblclick="hideOrShow">
               <!--{{level}}：-->
               {{data.name}}
             <span :class="{underline:settings.underLine}"></span></span>
@@ -248,7 +248,9 @@
        }, */
       // 子节点显示或者隐藏
       hideOrShow () {
-        this.isOpened = !this.isOpened
+        if (this.data.children) {
+          this.isOpened = !this.isOpened
+        }
       },
       // 选中或者取消选中，会影响子节点和父节点
       changeSelectStatus () {
