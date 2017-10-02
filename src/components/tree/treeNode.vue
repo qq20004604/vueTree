@@ -93,6 +93,9 @@
                      :asyncLoad="asyncLoad"
                      key="{{k}}" ref="child"></tree-node>
         </template>
+        <!-- 加载中 -->
+        <async-loading v-if="isLoading" :styleOptions="styleOptions" :settings="settings"
+                       :level="Number(level + 1)"></async-loading>
       </div>
     </transition>
   </div>
@@ -164,6 +167,7 @@
 
 </style>
 <script>
+  import asyncLoading from './asyncLoading.vue'
   import {
     DOMTransitionWhenBeforeEnter,
     DOMTransitionWhenEnter,
@@ -250,9 +254,10 @@
           lineHeight: '20px'
         },
         isMouseover: false,
-        textSpan: {},
+        textSpan: {}, // 本属性不能删除，在public里面会给他添加一些css属性
         isOpened: false,
-        checkedStatus: 0
+        checkedStatus: 0,
+        isLoading: false
       }
     },
     methods: {
@@ -426,7 +431,7 @@
       // 三种返回情况，无返回undefined，有子组件返回子组件，其他情况返回空数组
       getChildrenElement () {
         // 没有children返回undefined
-        if (!this.children) {
+        if (!this.data.children) {
           return undefined
         }
         // 如果打开了，那么返回child
@@ -435,6 +440,7 @@
       // 异步加载数据到子组件
       asyncLoadData () {
         new Promise((resolve, reject) => {
+          this.isLoading = true
           this.asyncLoad.load(this, resolve, reject)
         }).then(data => {
           // 如果不是数组，那么先设置为数组
@@ -444,7 +450,11 @@
           if (this.asyncLoad.insert(data, this.data.children)) {
             this.isOpened = !this.isOpened
           }
-        }).catch(this.asyncLoad.errorCatch)
+          this.isLoading = false
+        }).catch(err => {
+          this.asyncLoad.errorCatch(err)
+          this.isLoading = false
+        })
       }
     },
     computed: {
@@ -487,6 +497,9 @@
       checkBoxStyle () {
         return Object.assign({}, this.btnBoxStyle)
       }
+    },
+    components: {
+      asyncLoading
     }
   }
 </script>

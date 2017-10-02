@@ -96,6 +96,9 @@
                      :asyncLoad="asyncLoad"
                      ref="child"></tree-node>
         </template>
+        <!-- 加载中 -->
+        <async-loading v-if="isLoading" :styleOptions="styleOptions" :settings="settings"
+                       :level="Number(level + 1)"></async-loading>
       </div>
     </transition>
   </div>
@@ -179,6 +182,7 @@
 </style>
 <script>
   import treeNode from './treeNode.vue'
+  import asyncLoading from './asyncLoading.vue'
   import {
     DOMTransitionWhenBeforeEnter,
     DOMTransitionWhenEnter,
@@ -240,7 +244,8 @@
         isMouseover: false, // 当前鼠标是否移动上去了
         textSpan: {},
         isOpened: true,
-        checkedStatus: 0
+        checkedStatus: 0,
+        isLoading: false
       }
     },
     methods: {
@@ -376,8 +381,8 @@
       // 获取children
       getChildren () {
         let arr = []
-        if (this.children) {
-          this.children.forEach(item => {
+        if (this.data.children) {
+          this.data.children.forEach(item => {
             arr.push(item)
           })
           return arr
@@ -388,7 +393,7 @@
       // 三种返回情况，无返回undefined，有子组件返回子组件，其他情况返回空数组
       getChildrenElement () {
         // 没有children返回undefined
-        if (!this.children) {
+        if (!this.data.children) {
           return undefined
         }
         // 如果打开了，那么返回child
@@ -397,16 +402,21 @@
       // 异步加载数据到子组件
       asyncLoadData () {
         new Promise((resolve, reject) => {
+          this.isLoading = true
           this.asyncLoad.load(this, resolve, reject)
         }).then(data => {
           // 如果不是数组，那么先设置为数组
-          if (Object.prototype.toString.call(this.children) !== '[object Array]') {
-            this.children = []
+          if (Object.prototype.toString.call(this.data.children) !== '[object Array]') {
+            this.data.children = []
           }
-          if (this.asyncLoad.insert(data, this.children)) {
+          if (this.asyncLoad.insert(data, this.data.children)) {
             this.isOpened = !this.isOpened
           }
-        }).catch(this.asyncLoad.errorCatch)
+          this.isLoading = false
+        }).catch(err => {
+          this.asyncLoad.errorCatch(err)
+          this.isLoading = false
+        })
       }
     },
     computed: {
@@ -474,7 +484,8 @@
       }
     },
     components: {
-      treeNode
+      treeNode,
+      asyncLoading
     }
   }
 </script>
