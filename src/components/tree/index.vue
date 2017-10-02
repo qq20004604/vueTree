@@ -4,7 +4,6 @@
 * weChat: qq20004604
 * 传入的data是一个数组（测试数据用testData），因此支持多根结点
 */
-
 <template>
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in Data">
@@ -25,7 +24,6 @@
     width: 100%; /*宽度（默认撑满）*/
     height: 100%; /*宽度（默认撑满）*/
   }
-
 </style>
 <script>
   import rootNode from './rootNode.vue'
