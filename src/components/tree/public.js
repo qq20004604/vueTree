@@ -76,6 +76,28 @@ const defaultSettings = {
   }
 }
 
+// 标签的事件函数
+const treeNodeEvents = {
+  // 单机标签事件
+  // 参数一是当前标签的数据
+  // 参数二是当前组件
+  click (data, vueElement) {
+
+  },
+  // 双击标签
+  dblclick (data, vueElement) {
+
+  },
+  // 鼠标移动上去
+  mouseover (data, vueElement) {
+
+  },
+  // 鼠标离开
+  mouseleave (data, vueElement) {
+
+  }
+}
+
 const testData = [
   {
     'name': '前端工程师1231231',
