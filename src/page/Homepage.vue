@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="app" :style="boxStyle">
-      <tree :styleOptions="styleOptions" :settings="settings" ref="tree" :data="data"></tree>
+      <tree :styleOptions="styleOptions" :settings="settings" ref="tree" :data="data" :userEvents="events"></tree>
     </div>
     <a href="https://github.com/qq20004604/vueTree" style="text-decoration: underline;">点击查看Github链接</a>
     <button @click="repaint">改变组件父容器宽度并触发重绘</button>
@@ -11,7 +11,7 @@
 </template>
 <script>
   import tree from 'component/tree'
-  import {testData} from 'component/tree/public'
+  import {testData} from 'component/tree/config.js'
 
   export default {
     mounted () {
@@ -85,7 +85,29 @@
         test: {
           isWider: true
         },
-        data: testData
+        data: testData,
+        events: {
+//          // 单击事件
+//          click (data, vueElement) {
+//            console.log('click')
+//            console.log(data, vueElement)
+//          },
+//          // 双击标签，return true会阻止标签双击的时候关闭/打开子节点
+//          dblclick (data, vueElement) {
+//            console.log('dblclick')
+//            console.log(data, vueElement)
+//          },
+//          // 鼠标移动上去
+//          mouseover (data, vueElement) {
+//            console.log('mouseover')
+//            console.log(data, vueElement)
+//          },
+//          // 鼠标离开
+//          mouseout (data, vueElement) {
+//            console.log('mouseout')
+//            console.log(data, vueElement)
+//          }
+        }
       }
     },
     name: 'Homepage',

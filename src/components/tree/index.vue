@@ -9,7 +9,8 @@
   <div :style="listStyle" class="list">
     <template v-for="(v, k) in Data">
       <keep-alive>
-        <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"></root-node>
+        <root-node :styleOptions="styleOptions" :data="v" :settings="mixinSetting" ref="root"
+                   :events="events"></root-node>
       </keep-alive>
     </template>
   </div>
@@ -28,7 +29,8 @@
 </style>
 <script>
   import rootNode from './rootNode.vue'
-  import {deepCopy, defaultSettings} from './public'
+  import {defaultSettings, treeNodeEvents} from './config.js'
+  import {deepCopy} from './public'
 
   export default {
     props: {
@@ -55,6 +57,12 @@
       },
       data: {
         type: [Object, Array],
+        default () {
+          return {}
+        }
+      },
+      userEvents: {
+        type: Object,
         default () {
           return {}
         }
@@ -92,6 +100,9 @@
         } else {
           return this.data
         }
+      },
+      events () {
+        return Object.assign({}, treeNodeEvents, this.userEvents)
       }
     },
     methods: {

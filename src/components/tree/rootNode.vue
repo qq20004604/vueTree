@@ -69,7 +69,11 @@
         </div>
         <span class="text-box" :style="textBoxStyle" @mouseover="mouseover" @mouseout="mouseout">
               <span class="text" :class="textClass" :style="textStyle"
-                    ref="textSpan" @dblclick="hideOrShow">
+                    ref="textSpan"
+                    @click="clickEvent"
+                    @dblclick="debouleClickEvent"
+                    @mouseover="mouseoverEvent"
+                    @mouseout="mouseoutEvent">
                 <!--{{level}}：-->
                 {{data.name}}
                 <span :class="{underline:settings.underLine}"></span>
@@ -85,7 +89,7 @@
       <div v-if="isOpened" style="transform-origin: 50% 0;">
         <template v-for="(val, key) in data.children">
           <tree-node :data="val" :level="Number(level + 1)" :styleOptions="styleOptions" :settings="settings"
-                     ref="child"></tree-node>
+                     :events="events" ref="child"></tree-node>
         </template>
       </div>
     </transition>
@@ -193,6 +197,12 @@
         }
       },
       settings: {
+        type: Object,
+        default () {
+          return {}
+        }
+      },
+      events: {
         type: Object,
         default () {
           return {}
@@ -328,6 +338,22 @@
       // 获取当前节点的数据
       getData () {
         return getNodeData.call(this, this.data, true)
+      },
+      // 单击事件
+      clickEvent () {
+        this.events.click(this.getData(), this)
+      },
+      // 双击事件
+      debouleClickEvent () {
+        return this.events.dblclick(this.getData(), this) ? undefined : this.hideOrShow()
+      },
+      // 鼠标移动上去后的事件
+      mouseoverEvent () {
+        this.events.mouseover(this.getData(), this)
+      },
+      // 鼠标移动走的事件
+      mouseoutEvent () {
+        this.events.mouseout(this.getData(), this)
       }
     },
     computed: {
