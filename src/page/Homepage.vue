@@ -75,7 +75,7 @@
     computed: {
       boxStyle () {
         return {
-          width: this.test.isWider ? '500px' : '200px'
+          width: this.test.isWider ? '800px' : '200px'
         }
       }
     },
@@ -89,14 +89,14 @@
   .main {
     position: relative;
     margin: 0 auto;
-    padding-left: 500px;
+    padding-left: 800px;
   }
 
   .app {
     position: relative;
     float: left;
-    width: 500px;
-    margin-left: -500px;
+    width: 800px;
+    margin-left: -800px;
     box-sizing: border-box;
     overflow: auto;
     display: inline-block;

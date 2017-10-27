@@ -68,7 +68,7 @@ const defaultSettings = {
   },
   // 选中按钮（不选、全选、半选）
   checkBox: {
-    enabled: true,
+    enabled: false,
     checkedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAd0lEQVR4Ac3LzQnFIBDE8YX0F0xDwWLy0Y9VvLWJieEdFmFw9SBk5vr/yWeHDYrWMgLkveB/hTetQcf6QRoDBxZEF1S5MODnFKRGTsBegpvnHERIiS6aE2DkpDkBRlhOgBGWE2CE5QzYJoAMb78aBKiTrwaGPh88kDQO8EIv0iYAAAAASUVORK5CYII=',
     halfCheckedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAfElEQVRIie2UQQqAMAwEJ+IX1GeJj+jjq49YD1IoBau26MUO9BBCstlDFxpPkLRI8ipnlTRLIjxLBDwwVt65AlMoUgEBmJlRQJiP93Yli57Q55rRRVlyjl930ASaQBO4+MmlmRTzuYMNGO5m0Ak+LlIHjiPPa5a7ivk/sgO4oWjNa/J75wAAAABJRU5ErkJggg==',
     uncheckedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAQAAABKfvVzAAAAPklEQVQ4y2NgGKzgf+D/l//xgVf//VE14FcOAi9RNQABXhegy49qGNUwcBpeEUzeL1A1+BPIES/++w7a3A8AARf7kVFAnRoAAAAASUVORK5CYII='

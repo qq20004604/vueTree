@@ -35,7 +35,7 @@ const settings = {
     // 初始情况是否全部展开，默认false，只展开第一级。true则全部展开
     defaultOpened: true,
     // 自定义图标，默认为false。这里值为false时下面全部不生效
-    customIcon: true,
+    customIcon: false,
     // 开启时图标（如果图片比较小的话，建议转为base64字符串直接赋值）
     // 自动转码页面（我自己的）：http://www.jianwangsan.cn/%E5%9B%BE%E7%89%87tobase64.html
     openedIcon: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAJJJREFUeNpi/P//PwMtA' +
@@ -547,75 +547,82 @@ const asyncLoad = {
   }
 ] */
 
-const testData = [{
-  name: 'App.vue',
-  text: '整个系统的根组件，包括移动端和PC端的',
-  children: [
-    {
-      name: 'page/m_index，移动端根组件',
-      text: '移动端的根组件',
-      children: [
-        {
-          name: 'page/m_login，登录页',
-          text: '登录页',
-          image: 'static/m_login.png'
-        },
-        {
-          name: 'page/m_member_detail，登陆后的会员用户详情页',
-          image: 'static/m_member_detail.png',
-          text: '登录后会员详情页'
-        },
-        {
-          name: 'page/m_markets，列表页（全部社会网店，营业厅，超市便利店）',
-          image: 'static/m_markets.png',
-          text: '列表页（全部社会网店，营业厅，超市便利店）',
-          children: [
-            {
-              name: 'page/m_all_channels，全部社会渠道网点',
-              text: '全部社会渠道网点，画红框处',
-              image: 'static/m_all_channels.png',
-              children: [
-                {
-                  name: 'components/m_commodity_list，热门业务和商品',
-                  text: '热门业务和商品，画红框处',
-                  image: 'static/m_commodity_list.png'
-                },
-                {
-                  name: 'components/m_hall_details_item_with_business_volume，商品列表的单项（星级）',
-                  text: `商品列表的单项
+const testData = [
+  {
+    name: 'App.vue',
+    text: '整个系统的根组件，包括移动端和PC端的',
+    children: [
+      {
+        name: 'page/m_index，移动端根组件',
+        text: '移动端的根组件',
+        children: [
+          {
+            name: 'page/m_login，登录页',
+            text: '登录页',
+            image: 'static/m_login.png'
+          },
+          {
+            name: 'page/m_member_detail，登陆后的会员用户详情页',
+            image: 'static/m_member_detail.png',
+            text: '登录后会员详情页'
+          },
+          {
+            name: 'page/m_markets，列表页（全部社会网店，营业厅，超市便利店）',
+            image: 'static/m_markets.png',
+            text: '列表页（全部社会网店，营业厅，超市便利店）',
+            children: [
+              {
+                name: 'page/m_all_channels，全部社会渠道网点',
+                text: '全部社会渠道网点，画红框处',
+                image: 'static/m_all_channels.png',
+                children: [
+                  {
+                    name: 'components/m_commodity_list，热门业务和商品',
+                    text: '热门业务和商品，画红框处',
+                    image: 'static/m_commodity_list.png'
+                  },
+                  {
+                    name: 'components/m_hall_details_item_with_business_volume，商品列表的单项（星级）',
+                    text: `商品列表的单项
 包含：
 1、名字；
 2、距离；
 3、折扣和充值优惠；
 4、星级（其他的没有星级）`,
-                  image: 'static/m_hall_details_item_with_business_volume.png'
-                },
-                {
-                  name: 'components/m_hall_details_item_with_distance，商品列表的单项（排队人数）',
-                  text: `* 商品列表的单项
+                    image: 'static/m_hall_details_item_with_business_volume.png'
+                  },
+                  {
+                    name: 'components/m_hall_details_item_with_distance，商品列表的单项（排队人数）',
+                    text: `* 商品列表的单项
 包含：
 1、名字；
 2、距离；
 3、折扣和充值优惠；
 4、排队人数（主要区别是这一点）`,
-                  image: 'static/m_hall_details_item_with_distance.png'
-                },
-                {
-                  name: 'components/m_deal_with_business，业务办理组件（单项）（暂时放于此）',
-                  text: '业务办理组件（单项）（暂时放于此）',
-                  image: 'static/m_deal_with_business.png'
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      name: 'components/m_bulletscreen，弹幕'
-    }
-  ]
-}]
+                    image: 'static/m_hall_details_item_with_distance.png'
+                  },
+                  {
+                    name: 'components/m_deal_with_business，业务办理组件（单项）（暂时放于此）',
+                    text: '业务办理组件（单项）（暂时放于此）',
+                    image: 'static/m_deal_with_business.png'
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            name: 'page/m_map_width_store_list，地图模式（带商店）',
+            image: 'static/m_map_width_store_list.png',
+            text: '地图模式（带商店）'
+          }
+        ]
+      },
+      {
+        name: 'components/m_bulletscreen，弹幕'
+      }
+    ]
+  }
+]
 
 export {
   styleOptions,
